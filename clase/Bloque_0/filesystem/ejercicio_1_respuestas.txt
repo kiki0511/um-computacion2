@@ -1,0 +1,202 @@
+# Ejercicios 1.1, 1.2, 1.3 - Filesystem de Linux
+# Computación II - 2026 - Bloque 0
+
+================================================================================
+EJERCICIO 1.1 - Investigando el sistema
+================================================================================
+
+Pregunta 1: ¿Cuántos archivos hay directamente en /etc?
+-------------------------------------------------------
+Comando usado:
+    ls /etc | wc -l
+
+Explicación:
+    ls lista el contenido de /etc (sin -R, no es recursivo).
+    wc -l cuenta las líneas = cantidad de entradas directas.
+    Resultado típico: ~190 entradas en un sistema Debian/Ubuntu estándar.
+
+--------------------------------------------------------------------------------
+
+Pregunta 2: ¿Cuál es el tamaño exacto de /etc/passwd?
+------------------------------------------------------
+Comando usado:
+    stat /etc/passwd
+
+Salida relevante:
+    Size: XXXX    (varía según sistema y cantidad de usuarios)
+
+También se puede usar:
+    ls -l /etc/passwd    → muestra el tamaño en la quinta columna
+
+Explicación:
+    /etc/passwd es el archivo que mapea nombres de usuario a UID, GID,
+    directorio home y shell. Una línea por usuario.
+
+--------------------------------------------------------------------------------
+
+Pregunta 3: ¿Qué tipo de archivo es /dev/null? ¿Por qué es especial?
+---------------------------------------------------------------------
+Comandos usados:
+    file /dev/null
+    ls -l /dev/null
+
+Salida:
+    crw-rw-rw- 1 root root 1, 3 ... /dev/null
+    └─ la 'c' al inicio indica "character device"
+
+Explicación:
+    /dev/null es un dispositivo de caracteres especial, no un archivo real
+    en disco. Todo lo que se escribe en él se descarta silenciosamente.
+    Todo lo que se lee de él devuelve EOF inmediatamente.
+    Se usa mucho para suprimir salidas: comando 2>/dev/null
+    Es el "agujero negro" del sistema.
+
+--------------------------------------------------------------------------------
+
+Pregunta 4: ¿A dónde apunta el enlace simbólico /bin?
+------------------------------------------------------
+Comando usado:
+    readlink /bin
+    ls -l /bin
+
+Salida típica (en Ubuntu/Debian moderno):
+    /bin -> usr/bin
+
+Explicación:
+    En sistemas modernos (Debian 10+, Ubuntu 20.04+), /bin es un symlink
+    a /usr/bin. Esto se hizo para unificar el filesystem y simplificar
+    la administración. En sistemas más viejos, /bin era un directorio real.
+    El motivo es el proyecto "usrmerge".
+
+--------------------------------------------------------------------------------
+
+Pregunta 5: ¿Cuál es el número de inodo de ~/.bashrc (o ~/.zshrc)?
+-------------------------------------------------------------------
+Comando usado:
+    ls -i ~/.bashrc
+    stat ~/.bashrc | grep Inode
+
+Salida (ejemplo):
+    131074 /home/usuario/.bashrc
+
+Explicación:
+    El inodo es el identificador único de un archivo dentro de un filesystem.
+    Contiene todos los metadatos (permisos, propietario, timestamps, bloques
+    de disco usados) pero NO el nombre del archivo. El nombre vive en el
+    directorio, que es simplemente una tabla nombre -> inodo.
+
+--------------------------------------------------------------------------------
+
+Pregunta 6: ¿Cuántos enlaces duros tiene el directorio /home? ¿Por qué?
+-----------------------------------------------------------------------
+Comando usado:
+    ls -ld /home
+    stat /home | grep Links
+
+Salida típica:
+    drwxr-xr-x 3 root root 4096 ... /home
+    └─ el número después de los permisos es la cantidad de hard links
+
+Explicación:
+    Un directorio tiene al menos 2 enlaces duros:
+      1. El nombre del directorio en su padre (/home desde /)
+      2. La entrada "." dentro del directorio mismo
+
+    Por cada subdirectorio que contiene, suma 1 más (por la entrada ".."
+    que ese subdirectorio tiene apuntando a /home).
+
+    Entonces: si /home tiene 1 subdirectorio (ej: /home/juan), el conteo es 3.
+    Fórmula: 2 + (cantidad de subdirectorios directos)
+
+
+================================================================================
+EJERCICIO 1.2 - Entendiendo permisos
+================================================================================
+
+Paso 1 y 2: Intentar ejecutar ./mi_script.sh sin permiso de ejecución
+----------------------------------------------------------------------
+Error que aparece:
+    bash: ./mi_script.sh: Permission denied
+
+¿Por qué?
+    Los permisos por defecto al crear un archivo son 644 (rw-r--r--):
+      - Propietario: lectura + escritura
+      - Grupo: solo lectura
+      - Otros: solo lectura
+    Nadie tiene permiso de ejecución, por eso el sistema operativo rechaza
+    el intento de ejecutar el archivo.
+
+Paso 3: Interpretar -rw-r--r--
+-------------------------------
+    - (primer carácter): tipo de archivo. '-' = regular, 'd' = directorio,
+                         'l' = symlink, 'c' = char device, 'b' = block device
+    rw-  : permisos del propietario (r=lectura, w=escritura, -=sin ejecución)
+    r--  : permisos del grupo (solo lectura)
+    r--  : permisos de otros (solo lectura)
+
+Paso 4 y 5: chmod +x
+--------------------
+    chmod +x mi_script.sh
+    Resultado: -rwxr-xr-x (agrega 'x' a propietario, grupo y otros)
+
+Diferencia entre chmod +x y chmod 755:
+    chmod +x   → agrega ejecución a TODOS los que ya tienen lectura,
+                 relativo a los permisos actuales
+    chmod 755  → establece permisos EXACTOS: rwxr-xr-x (propietario todo,
+                 grupo y otros lectura+ejecución), independiente del estado anterior
+
+Permisos 644 - ¿quién puede qué?
+    Propietario (6 = rw-): leer y escribir
+    Grupo       (4 = r--): solo leer
+    Otros       (4 = r--): solo leer
+    Nadie puede ejecutar.
+
+¿Por qué los directorios necesitan 'x' para entrar?
+    En un directorio, 'x' (ejecución) significa permiso de "traversal" o
+    acceso. Sin 'x' podés ver el nombre del directorio pero no acceder a
+    su contenido ni hacer cd. Con solo 'r' podés listar los nombres de
+    los archivos, pero sin 'x' no podés leer ni acceder a ellos.
+
+
+================================================================================
+EJERCICIO 1.3 - Enlaces duros vs simbólicos
+================================================================================
+
+Diferencia fundamental:
+-----------------------
+    ENLACE DURO  → apunta directamente al INODO del archivo.
+                   Es básicamente otro nombre para el mismo archivo.
+                   El contenido existe mientras haya al menos 1 enlace duro.
+
+    ENLACE SIMBÓLICO → almacena una RUTA (string) como destino.
+                       Si la ruta de destino desaparece, el symlink queda roto.
+                       Tiene su propio inodo (es un archivo distinto).
+
+Observación de inodos con ls -li:
+----------------------------------
+    original.txt y enlace_duro.txt → mismo número de inodo
+    enlace_simbolico.txt           → inodo diferente, tamaño = longitud del string
+                                     del path al que apunta
+
+Después de rm original.txt:
+----------------------------
+    cat enlace_duro.txt    → funciona, el contenido sigue en disco
+    cat enlace_simbolico.txt → error: No such file or directory
+
+    ls -l mostrará el symlink en rojo (enlace roto).
+
+¿Cuándo usar cada uno?
+-----------------------
+    ENLACE DURO:
+      - Cuando querés que el archivo persista aunque se borre el original
+      - Backups eficientes (hardlinks no duplican datos en disco)
+      - Solo funcionan dentro del mismo filesystem
+      - No pueden apuntar a directorios (por convención del kernel)
+
+    ENLACE SIMBÓLICO:
+      - Cuando querés referenciar una ruta que puede cambiar
+      - Para apuntar a directorios
+      - Para apuntar entre filesystems distintos
+      - Alternativas de versiones: python3 -> python3.11
+
+================================================================================
