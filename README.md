@@ -22,7 +22,8 @@ um-computacion2/
 │   ├── Clase_05/              # Señales
 │   ├── Clase_06/              # mmap y memoria compartida
 │   ├── Clase_07/              # Multiprocessing: fundamentos
-│   └── Clase_08/              # Multiprocessing avanzado (Pool, Manager)
+│   ├── Clase_08/              # Multiprocessing avanzado (Pool, Manager)
+│   └── Clase_09/              # Threading (GIL, Lock, Queue, daemon threads)
 ├── tp1/                       # Trabajo Práctico 1
 └── tp2/                       # Trabajo Práctico 2
 ```
@@ -43,7 +44,8 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 | Clase 06 | mmap y memoria compartida | ✅ Completo |
 | Clase 07 | Multiprocessing fundamentos | ✅ Completo |
 | Clase 08 | Multiprocessing avanzado | ✅ Completo |
-| TP1 | — | ⏳ Pendiente de consigna |
+| Clase 09 | Threading | ✅ Completo |
+| TP1 | Monitor de procesos y threads | ⏳ Consigna disponible, no iniciado |
 | TP2 | — | ⏳ Pendiente de consigna |
 
 ## Ejercicios obligatorios destacados
@@ -54,6 +56,7 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 - **Clase 05:** `servidor_signals.py` (servidor que responde a señales)
 - **Clase 06:** `value_array.py` (Value/Array compartidos, race condition)
 - **Clase 08:** `procesador_imagenes.py` (procesamiento paralelo con Pool)
+- **Clase 09:** `descargador_paralelo.py` (pool de threads descargando URLs)
 
 ## Requisitos
 
