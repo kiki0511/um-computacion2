@@ -25,7 +25,12 @@ def analizador_resumen(pids_compartidos, snapshot, intervalo, evento_salida):
         propia clave, snapshot["resumen"], y nunca toca las demás --
         así los 7 analizadores pueden correr en paralelo sin pisarse
         (cada uno tiene su "casillero" propio en el mismo dict).
-    intervalo: segundos entre pasadas (default consigna: 2s).
+    intervalo: multiprocessing.Value("d", segundos). Es un Value y no un
+        float común porque el proceso principal necesita poder cambiarlo
+        en caliente -- por SIGHUP (recarga de config.json) o, en la
+        Fase 4, con las teclas +/- de la TUI. Se lee intervalo.value en
+        cada vuelta del loop, así el cambio se aplica sin reiniciar el
+        proceso.
     evento_salida: multiprocessing.Event() para shutdown limpio.
     """
     # Estado privado de este proceso: última lectura de utime/stime/tiempo
@@ -69,7 +74,7 @@ def analizador_resumen(pids_compartidos, snapshot, intervalo, evento_salida):
                     del previo[pid_viejo]
 
             snapshot["resumen"] = {"datos": resultados, "timestamp": ahora}
-            evento_salida.wait(intervalo)
+            evento_salida.wait(intervalo.value)
     except KeyboardInterrupt:
         # Mismo motivo que en recolector.py: Ctrl+C le llega directo a
         # este proceso hijo también. Manejo provisorio hasta la Fase 3.
