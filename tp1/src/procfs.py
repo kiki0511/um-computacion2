@@ -222,6 +222,22 @@ def calcular_cpu_pct(utime_actual, stime_actual, utime_anterior, stime_anterior,
     return 100.0 * segundos_cpu / delta_segundos
 
 
+def identificar_proceso(pid):
+    """
+    Helper chico compartido por los analizadores que no necesitan todo
+    info_resumen(), solo identificar de quién es el proceso: pid, usuario
+    y comando completo. Evita repetir "leer status, sacar Uid, resolver
+    nombre_usuario, leer cmdline" en Memoria/FDs/Señales/Scheduling.
+    """
+    status = leer_status(pid)
+    uid = int(status.get("Uid", "0").split()[0])
+    return {
+        "pid": pid,
+        "usuario": nombre_usuario(uid),
+        "comando": leer_cmdline(pid),
+    }
+
+
 def info_resumen(pid):
     """
     Combina stat + status + cmdline en un solo dict con los datos de la

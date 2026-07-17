@@ -21,6 +21,7 @@ ajustar su intervalo, etc. -- pero muestran un cartel de "pendiente"
 hasta que la Fase 5 les conecte un analizador de verdad.
 """
 import curses
+import time
 
 
 # Metadata de las 7 vistas obligatorias: número, teclas que la activan,
@@ -231,13 +232,57 @@ def procesar_tecla(estado, tecla, intervalos, filas):
 # Renderizado (curses de verdad, a partir de acá)
 # ---------------------------------------------------------------------------
 
-COLUMNAS_RESUMEN = [
-    ("PID", 7), ("PPID", 7), ("USUARIO", 10), ("EST", 3),
-    ("CPU%", 6), ("THR", 4),
-]
-COLUMNAS_RESUMEN_VERBOSE = COLUMNAS_RESUMEN + [
-    ("UID", 5), ("GID", 5), ("UTIME", 7), ("STIME", 7),
-]
+# Config de columnas por vista, para no repetir 6 funciones de formateo
+# casi idénticas. Cada entrada: (etiqueta, campo_del_dict, ancho, fmt).
+# "final_campo"/"final_etiqueta" es la columna de texto libre al final
+# (comando, o el nombre del thread en la vista Threads).
+COLUMNAS_POR_VISTA = {
+    "resumen": {
+        "base": [("PID", "pid", 7, str), ("PPID", "ppid", 7, str),
+                  ("USUARIO", "usuario", 10, str), ("EST", "estado", 3, str),
+                  ("CPU%", "cpu_pct", 6, lambda v: f"{v:.1f}"), ("THR", "num_threads", 4, str)],
+        "verbose_extra": [("UID", "uid", 5, str), ("GID", "gid", 5, str),
+                           ("UTIME", "utime", 7, str), ("STIME", "stime", 7, str)],
+        "final_campo": "comando", "final_etiqueta": "COMANDO",
+    },
+    "memoria": {
+        "base": [("PID", "pid", 7, str), ("USUARIO", "usuario", 10, str),
+                  ("RSS(kB)", "VmRSS", 9, str), ("VSZ(kB)", "VmSize", 9, str),
+                  ("DATA(kB)", "VmData", 9, str), ("MINFLT", "minflt", 8, str), ("MAJFLT", "majflt", 8, str)],
+        "verbose_extra": [("EXE(kB)", "VmExe", 8, str), ("LIB(kB)", "VmLib", 8, str),
+                           ("HWM(kB)", "VmHWM", 8, str), ("SWAP(kB)", "VmSwap", 9, str)],
+        "final_campo": "comando", "final_etiqueta": "COMANDO",
+    },
+    "fds": {
+        "base": [("PID", "pid", 7, str), ("USUARIO", "usuario", 10, str), ("TOTAL", "total_fds", 6, str)],
+        "verbose_extra": [],  # el detalle de cada FD va en el panel de abajo, no en la tabla
+        "final_campo": "comando", "final_etiqueta": "COMANDO",
+    },
+    "threads": {
+        "base": [("TID", "tid", 7, str), ("PID", "pid_proceso", 7, str),
+                  ("EST", "estado", 3, str), ("CPU%", "cpu_pct", 6, lambda v: f"{v:.1f}")],
+        "verbose_extra": [("VOL_CS", "ctxt_switches_voluntarios", 7, str),
+                           ("INV_CS", "ctxt_switches_involuntarios", 7, str)],
+        "final_campo": "nombre", "final_etiqueta": "NOMBRE",
+    },
+    "senales": {
+        "base": [("PID", "pid", 7, str), ("USUARIO", "usuario", 10, str),
+                  ("BLOQ", "bloqueadas", 5, lambda v: str(len(v))),
+                  ("IGN", "ignoradas", 5, lambda v: str(len(v))),
+                  ("HANDLER", "con_handler", 8, lambda v: str(len(v))),
+                  ("PEND", "pendientes", 5, lambda v: str(len(v)))],
+        "verbose_extra": [],
+        "final_campo": "comando", "final_etiqueta": "COMANDO",
+    },
+    "scheduling": {
+        "base": [("PID", "pid", 7, str), ("USUARIO", "usuario", 10, str),
+                  ("NICE", "nice", 5, str), ("PRIO", "priority", 5, str),
+                  ("POLICY", "policy", 12, str), ("SID", "sid", 7, str), ("PGID", "pgid", 7, str)],
+        "verbose_extra": [("VOL_CS", "ctxt_switches_voluntarios", 7, str),
+                           ("INV_CS", "ctxt_switches_involuntarios", 7, str)],
+        "final_campo": "comando", "final_etiqueta": "COMANDO",
+    },
+}
 
 
 def _addstr_seguro(stdscr, y, x, texto, attr=0):
@@ -256,16 +301,153 @@ def _addstr_seguro(stdscr, y, x, texto, attr=0):
         pass
 
 
-def _fila_resumen(fila, verbose):
-    comando = fila["comando"]
-    if verbose:
-        base = (f"{fila['pid']:>7} {fila['ppid']:>7} {fila['usuario']:<10} "
-                f"{fila['estado']:<3} {fila['cpu_pct']:>6.1f} {fila['num_threads']:>4} "
-                f"{fila['uid']:>5} {fila['gid']:>5} {fila['utime']:>7} {fila['stime']:>7}  ")
-    else:
-        base = (f"{fila['pid']:>7} {fila['ppid']:>7} {fila['usuario']:<10} "
-                f"{fila['estado']:<3} {fila['cpu_pct']:>6.1f} {fila['num_threads']:>4}  ")
-    return base + comando
+def _titulo_columnas(config, verbose):
+    columnas = config["base"] + (config["verbose_extra"] if verbose else [])
+    return "".join(f"{etq:>{ancho}} " for etq, _campo, ancho, _fmt in columnas) + " " + config["final_etiqueta"]
+
+
+def _formatear_fila(fila, config, verbose):
+    columnas = config["base"] + (config["verbose_extra"] if verbose else [])
+    partes = [f"{fmt(fila.get(campo, 0)):>{ancho}}" for _etq, campo, ancho, fmt in columnas]
+    texto_final = str(fila.get(config["final_campo"], ""))
+    return " ".join(partes) + "  " + texto_final
+
+
+# --- Panel de detalle: una función por vista, cada una devuelve una
+# lista de líneas de texto para el proceso/fila seleccionada. ---
+
+def _detalle_resumen(f):
+    return [
+        f"PPID: {f['ppid']}   UID: {f['uid']} ({f['usuario']})   GID: {f['gid']}",
+        f"Threads: {f['num_threads']}   CPU%: {f['cpu_pct']:.1f}   utime: {f['utime']}   stime: {f['stime']}",
+        f"Comando: {f['comando']}",
+    ]
+
+
+def _detalle_memoria(f):
+    return [
+        f"VmSize: {f['VmSize']} kB   VmRSS: {f['VmRSS']} kB   VmData: {f['VmData']} kB   VmStk: {f['VmStk']} kB",
+        f"VmExe: {f['VmExe']} kB   VmLib: {f['VmLib']} kB   VmHWM: {f['VmHWM']} kB   VmSwap: {f['VmSwap']} kB",
+        f"minflt: {f['minflt']}   majflt: {f['majflt']}",
+        "Segmentos (bytes): " + ", ".join(f"{k}={v}" for k, v in f["segmentos"].items()),
+        f"Comando: {f['comando']}",
+    ]
+
+
+def _detalle_fds(f):
+    conteo_txt = ", ".join(f"{k}={v}" for k, v in f["conteo_por_tipo"].items()) or "(ninguno)"
+    lineas = [f"Total FDs: {f['total_fds']}   Por tipo: {conteo_txt}", f"Comando: {f['comando']}"]
+    for fd in f["fds"][:5]:
+        lineas.append(f"  fd {fd['fd']:>3} ({fd['tipo']}) -> {fd['destino']}")
+    if len(f["fds"]) > 5:
+        lineas.append(f"  ... y {len(f['fds']) - 5} más")
+    return lineas
+
+
+def _detalle_threads(f):
+    return [
+        f"Proceso dueño (PID): {f['pid_proceso']}   Estado: {f['estado_desc']}",
+        f"CPU%: {f['cpu_pct']:.1f}   ctxt vol: {f['ctxt_switches_voluntarios']}   "
+        f"ctxt inv: {f['ctxt_switches_involuntarios']}",
+        f"Nombre del thread: {f['nombre']}",
+    ]
+
+
+def _detalle_senales(f):
+    def fmt(lista):
+        return ", ".join(lista) if lista else "(ninguna)"
+    return [
+        f"Bloqueadas: {fmt(f['bloqueadas'])}",
+        f"Ignoradas: {fmt(f['ignoradas'])}",
+        f"Con handler propio: {fmt(f['con_handler'])}",
+        f"Pendientes: {fmt(f['pendientes'])}   Pendientes de grupo: {fmt(f['pendientes_grupo'])}",
+        f"Comando: {f['comando']}",
+    ]
+
+
+def _detalle_scheduling(f):
+    return [
+        f"Nice: {f['nice']}   Priority: {f['priority']}   Policy: {f['policy']}   RT prio: {f['rt_priority']}",
+        f"CPU affinity: {f['cpu_affinity']}",
+        f"ctxt vol: {f['ctxt_switches_voluntarios']}   ctxt inv: {f['ctxt_switches_involuntarios']}   "
+        f"SID: {f['sid']}   PGID: {f['pgid']}",
+        f"Comando: {f['comando']}",
+    ]
+
+
+DETALLE_POR_VISTA = {
+    "resumen": _detalle_resumen,
+    "memoria": _detalle_memoria,
+    "fds": _detalle_fds,
+    "threads": _detalle_threads,
+    "senales": _detalle_senales,
+    "scheduling": _detalle_scheduling,
+}
+
+
+def _renderizar_sistema(stdscr, entrada):
+    """
+    Render especial para la vista Sistema global: no es una tabla de
+    procesos con selección, es un panel fijo con los datos agregados que
+    escribió analizadores/sistema.py (ver ese módulo para el porqué de
+    esta diferencia de forma).
+    """
+    d = entrada["datos"]
+    y = 2
+
+    cpu = d["cpu_pct"]
+    _addstr_seguro(stdscr, y, 0,
+                    f"CPU global -- user: {cpu['user']:.1f}%  system: {cpu['system']:.1f}%  "
+                    f"idle: {cpu['idle']:.1f}%  iowait: {cpu['iowait']:.1f}%")
+    y += 2
+
+    la = d["loadavg"]
+    _addstr_seguro(stdscr, y, 0,
+                    f"Load average -- 1m: {la['load1']:.2f}  5m: {la['load5']:.2f}  15m: {la['load15']:.2f}   "
+                    f"procesos corriendo: {la['procesos_corriendo']}/{la['procesos_totales']}")
+    y += 2
+
+    m = d["meminfo"]
+
+    def mb(clave):
+        return m.get(clave, 0) / 1024
+
+    _addstr_seguro(stdscr, y, 0,
+                    f"Memoria -- Total: {mb('MemTotal'):.0f} MB   Libre: {mb('MemFree'):.0f} MB   "
+                    f"Disponible: {mb('MemAvailable'):.0f} MB")
+    y += 1
+    _addstr_seguro(stdscr, y, 0,
+                    f"           Buffers: {mb('Buffers'):.0f} MB   Cached: {mb('Cached'):.0f} MB   "
+                    f"Swap libre: {mb('SwapFree'):.0f}/{mb('SwapTotal'):.0f} MB")
+    y += 2
+
+    c = d["conteos_procesos"]
+    por_estado_txt = ", ".join(f"{k}={v}" for k, v in c["por_estado"].items())
+    _addstr_seguro(stdscr, y, 0,
+                    f"Procesos -- total: {c['total_procesos']}   threads totales: {c['total_threads']}   "
+                    f"zombies: {c['zombies']}   por estado: {por_estado_txt}")
+    y += 2
+
+    horas = int(d["uptime_seg"] // 3600)
+    minutos = int((d["uptime_seg"] % 3600) // 60)
+    boot_legible = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(d["btime"]))
+    _addstr_seguro(stdscr, y, 0, f"Uptime: {horas}h {minutos}m   Boot time: {boot_legible}")
+    y += 2
+
+    _addstr_seguro(stdscr, y, 0, "Top 3 por CPU%:", curses.A_UNDERLINE)
+    y += 1
+    for p in d["top_cpu"]:
+        comando = p["comando"][:60]
+        _addstr_seguro(stdscr, y, 2, f"PID {p['pid']:>7} {p['usuario']:<10} {p['valor']:>6.1f}%  {comando}")
+        y += 1
+    y += 1
+
+    _addstr_seguro(stdscr, y, 0, "Top 3 por RSS:", curses.A_UNDERLINE)
+    y += 1
+    for p in d["top_mem"]:
+        comando = p["comando"][:60]
+        _addstr_seguro(stdscr, y, 2, f"PID {p['pid']:>7} {p['usuario']:<10} {p['valor']:>9} kB  {comando}")
+        y += 1
 
 
 def renderizar(stdscr, estado, snapshot, filas, intervalos, verbose):
@@ -295,39 +477,34 @@ def renderizar(stdscr, estado, snapshot, filas, intervalos, verbose):
                   f"verbose={verbose}){filtros_txt}")
     _addstr_seguro(stdscr, 0, 0, encabezado, curses.A_BOLD)
 
-    entrada_cruda = obtener_filas(snapshot, estado.vista_activa)
+    entrada = snapshot.get(estado.vista_activa)
 
-    if entrada_cruda is None:
+    if entrada is None:
         _addstr_seguro(stdscr, 2, 2,
-                        f"Analizador de '{vista['nombre']}' todavía no implementado (Fase 5).")
+                        f"Analizador de '{vista['nombre']}' todavía no implementado.")
+        _renderizar_pie(stdscr, estado)
+        stdscr.refresh()
+        return
+
+    if estado.vista_activa == "sistema":
+        _renderizar_sistema(stdscr, entrada)
         _renderizar_pie(stdscr, estado)
         stdscr.refresh()
         return
 
     if not filas:
-        mensaje = ("(sin procesos que coincidan con el filtro)" if entrada_cruda
-                   else "(esperando la primera pasada del analizador...)")
+        mensaje = ("(sin procesos que coincidan con el filtro)" if entrada.get("datos") else
+                   "(esperando la primera pasada del analizador...)")
         _addstr_seguro(stdscr, 2, 2, mensaje)
         _renderizar_pie(stdscr, estado)
         stdscr.refresh()
         return
 
-    if estado.vista_activa != "resumen":
-        # Vistas no implementadas todavía pero con "filas" (no debería
-        # pasar hoy, ya que solo resumen escribe al snapshot -- queda
-        # preparado para cuando la Fase 5 las conecte).
-        _addstr_seguro(stdscr, 2, 2,
-                        f"Vista '{vista['nombre']}' pendiente de analizador (Fase 5).")
-        _renderizar_pie(stdscr, estado)
-        stdscr.refresh()
-        return
+    # --- Tabla de procesos (genérica, según COLUMNAS_POR_VISTA) ---
+    config = COLUMNAS_POR_VISTA[estado.vista_activa]
+    _addstr_seguro(stdscr, 2, 0, _titulo_columnas(config, verbose), curses.A_UNDERLINE)
 
-    # --- Tabla de procesos (vista Resumen) ---
-    columnas = COLUMNAS_RESUMEN_VERBOSE if verbose else COLUMNAS_RESUMEN
-    titulo = "".join(f"{nombre:>{ancho_col}} " for nombre, ancho_col in columnas) + " COMANDO"
-    _addstr_seguro(stdscr, 2, 0, titulo, curses.A_UNDERLINE)
-
-    altura_detalle = 6  # líneas reservadas abajo para el panel de detalle
+    altura_detalle = 7  # líneas reservadas abajo para el panel de detalle
     filas_visibles = max(0, altura - 2 - altura_detalle - 1)
 
     inicio = max(0, estado.indice_seleccionado - filas_visibles // 2)
@@ -337,24 +514,19 @@ def renderizar(stdscr, estado, snapshot, filas, intervalos, verbose):
         attr = curses.A_REVERSE if indice_real == estado.indice_seleccionado else 0
         if fila.get("pid") == estado.pid_pineado:
             attr |= curses.A_BOLD
-        _addstr_seguro(stdscr, y, 0, _fila_resumen(fila, verbose), attr)
+        _addstr_seguro(stdscr, y, 0, _formatear_fila(fila, config, verbose), attr)
 
-    # --- Panel de detalle del proceso seleccionado ---
+    # --- Panel de detalle de la fila seleccionada ---
     y_detalle = altura - altura_detalle
     if 0 <= estado.indice_seleccionado < len(filas):
         seleccionado = filas[estado.indice_seleccionado]
         _addstr_seguro(stdscr, y_detalle, 0, "-" * min(ancho, 78), curses.A_DIM)
         pineado_txt = " [PINEADO]" if seleccionado.get("pid") == estado.pid_pineado else ""
-        _addstr_seguro(stdscr, y_detalle + 1, 0,
-                        f"PID {seleccionado['pid']} -- {seleccionado['estado_desc']}{pineado_txt}",
-                        curses.A_BOLD)
-        _addstr_seguro(stdscr, y_detalle + 2, 0,
-                        f"PPID: {seleccionado['ppid']}   UID: {seleccionado['uid']} "
-                        f"({seleccionado['usuario']})   GID: {seleccionado['gid']}")
-        _addstr_seguro(stdscr, y_detalle + 3, 0,
-                        f"Threads: {seleccionado['num_threads']}   CPU%: {seleccionado['cpu_pct']:.1f}   "
-                        f"utime: {seleccionado['utime']}   stime: {seleccionado['stime']}")
-        _addstr_seguro(stdscr, y_detalle + 4, 0, f"Comando: {seleccionado['comando']}")
+        _addstr_seguro(stdscr, y_detalle + 1, 0, f"Detalle{pineado_txt}", curses.A_BOLD)
+        detalle_fn = DETALLE_POR_VISTA.get(estado.vista_activa)
+        if detalle_fn:
+            for i, linea in enumerate(detalle_fn(seleccionado)):
+                _addstr_seguro(stdscr, y_detalle + 2 + i, 0, linea)
 
     _renderizar_pie(stdscr, estado)
     stdscr.refresh()
