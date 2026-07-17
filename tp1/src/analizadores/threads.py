@@ -40,7 +40,7 @@ def analizador_threads(pids_compartidos, snapshot, intervalo, evento_salida):
             for pid in pids:
                 try:
                     tids = procfs.listar_threads(pid)
-                except (FileNotFoundError, ProcessLookupError):
+                except (FileNotFoundError, ProcessLookupError, PermissionError):
                     continue
 
                 for tid in tids:
@@ -49,8 +49,10 @@ def analizador_threads(pids_compartidos, snapshot, intervalo, evento_salida):
                         stat = procfs.leer_stat(pid, tid)
                         nombre = procfs.leer_comm(pid, tid)
                         status = procfs.leer_status(pid, tid)
-                    except (FileNotFoundError, ProcessLookupError):
-                        # El thread terminó entre listar_threads() y leerlo.
+                    except (FileNotFoundError, ProcessLookupError, PermissionError):
+                        # El thread terminó entre listar_threads() y leerlo,
+                        # o (con pid: host) es de otro usuario y no podemos
+                        # leer sus detalles.
                         continue
 
                     claves_vigentes.add(clave)

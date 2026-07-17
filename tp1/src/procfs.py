@@ -617,7 +617,7 @@ def contar_procesos():
     for pid in listar_pids():
         try:
             stat = leer_stat(pid)
-        except (FileNotFoundError, ProcessLookupError):
+        except (FileNotFoundError, ProcessLookupError, PermissionError):
             continue
 
         total_procesos += 1
@@ -644,8 +644,8 @@ def main():
     for pid in listar_pids():
         try:
             info = info_resumen(pid)
-        except (FileNotFoundError, ProcessLookupError):
-            continue  # el proceso terminó entre listar_pids() y leerlo
+        except (FileNotFoundError, ProcessLookupError, PermissionError):
+            continue  # el proceso terminó entre listar_pids() y leerlo, o no tenemos permiso
 
         comando = info["comando"]
         if len(comando) > 60:

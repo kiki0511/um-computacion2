@@ -31,7 +31,7 @@ def analizador_senales(pids_compartidos, snapshot, intervalo, evento_salida):
                 try:
                     base = procfs.identificar_proceso(pid)
                     senales = procfs.info_senales(pid)
-                except (FileNotFoundError, ProcessLookupError):
+                except (FileNotFoundError, ProcessLookupError, PermissionError):
                     continue
 
                 base.update(senales)

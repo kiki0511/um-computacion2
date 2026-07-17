@@ -27,7 +27,7 @@ def analizador_fds(pids_compartidos, snapshot, intervalo, evento_salida):
                 try:
                     base = procfs.identificar_proceso(pid)
                     fds = procfs.listar_fds(pid)
-                except (FileNotFoundError, ProcessLookupError):
+                except (FileNotFoundError, ProcessLookupError, PermissionError):
                     continue
 
                 conteo_por_tipo = {}

@@ -34,7 +34,7 @@ def analizador_memoria(pids_compartidos, snapshot, intervalo, evento_salida):
                     vm = procfs.info_memoria_status(pid)
                     stat = procfs.leer_stat(pid)
                     segmentos = procfs.agrupar_memoria(pid)
-                except (FileNotFoundError, ProcessLookupError):
+                except (FileNotFoundError, ProcessLookupError, PermissionError):
                     continue
 
                 base.update(vm)

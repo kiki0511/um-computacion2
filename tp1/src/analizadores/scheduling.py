@@ -25,7 +25,7 @@ def analizador_scheduling(pids_compartidos, snapshot, intervalo, evento_salida):
                 try:
                     base = procfs.identificar_proceso(pid)
                     sched = procfs.info_scheduling(pid)
-                except (FileNotFoundError, ProcessLookupError):
+                except (FileNotFoundError, ProcessLookupError, PermissionError):
                     continue
 
                 base.update(sched)

@@ -1,0 +1,24 @@
+services:
+  monitor:
+    build: .
+    # tty + stdin_open: sin esto, curses no tiene una terminal real para
+    # dibujar ni entrada de teclado interactiva -- el contenedor se
+    # quedaría corriendo "a ciegas", sin poder navegar la TUI.
+    tty: true
+    stdin_open: true
+    # Docker NO hereda el TERM del host -- sin esto, curses puede no
+    # encontrar las secuencias de escape para cambiar a la pantalla
+    # alternativa (smcup/rmcup) y limpiar bien la terminal al arrancar,
+    # dejando pegados restos de texto de ANTES de que el programa tomara
+    # control de la pantalla (ej: el "Attaching to..." de docker compose).
+    environment:
+      - TERM=xterm-256color
+    # Comparte el namespace de PIDs del host: por default, un contenedor
+    # solo ve SUS PROPIOS procesos (5-6 nada más), lo cual lo vuelve un
+    # monitor bastante aburrido de probar. Con esto, /proc adentro del
+    # contenedor muestra los procesos REALES del host -- el trade-off es
+    # que algunas lecturas de /proc de procesos de otros usuarios van a
+    # fallar por permisos (PermissionError), algo que ya está contemplado
+    # en el manejo de excepciones de cada analizador (se ignora ese PID
+    # y se sigue, igual que con un proceso que ya murió).
+    pid: host

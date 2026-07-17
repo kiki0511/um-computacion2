@@ -1,0 +1,4 @@
+# El monitor usa exclusivamente la stdlib de Python (os, multiprocessing,
+# signal, select, curses, json, time, pwd) -- no hay dependencias
+# externas. Este archivo se deja presente por completitud de la
+# estructura del repo y por si en el futuro hiciera falta agregar algo.

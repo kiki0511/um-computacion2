@@ -47,9 +47,14 @@ def analizador_resumen(pids_compartidos, snapshot, intervalo, evento_salida):
             for pid in pids:
                 try:
                     info = procfs.info_resumen(pid)
-                except (FileNotFoundError, ProcessLookupError):
-                    # El proceso murió entre que el recolector lo listó y
-                    # que nosotros lo leímos -- normal con /proc, se ignora.
+                except (FileNotFoundError, ProcessLookupError, PermissionError):
+                    # FileNotFoundError/ProcessLookupError: el proceso murió
+                    # entre que el recolector lo listó y que nosotros lo
+                    # leímos -- normal con /proc, se ignora.
+                    # PermissionError: con el contenedor viendo el namespace
+                    # de PIDs del host (pid: host en docker-compose), hay
+                    # procesos de otros usuarios cuyos detalles no podemos
+                    # leer -- se ignoran igual, no es un bug.
                     continue
 
                 utime, stime = info["utime"], info["stime"]
