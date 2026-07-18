@@ -23,7 +23,8 @@ um-computacion2/
 │   ├── Clase_06/              # mmap y memoria compartida
 │   ├── Clase_07/              # Multiprocessing: fundamentos
 │   ├── Clase_08/              # Multiprocessing avanzado (Pool, Manager)
-│   └── Clase_09/              # Threading (GIL, Lock, Queue, daemon threads)
+│   ├── Clase_09/              # Threading (GIL, Lock, Queue, daemon threads)
+│   └── Clase_10/              # Sincronización avanzada (RLock, Semaphore, Condition, Barrier)
 ├── tp1/                       # Trabajo Práctico 1
 └── tp2/                       # Trabajo Práctico 2
 ```
@@ -45,7 +46,8 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 | Clase 07 | Multiprocessing fundamentos | ✅ Completo |
 | Clase 08 | Multiprocessing avanzado | ✅ Completo |
 | Clase 09 | Threading | ✅ Completo |
-| TP1 | Monitor de procesos y threads | ⏳ Consigna disponible, no iniciado |
+| Clase 10 | Sincronización avanzada | ✅ Completo |
+| TP1 | Monitor de procesos y threads | ✅ Completo |
 | TP2 | — | ⏳ Pendiente de consigna |
 
 ## Ejercicios obligatorios destacados
