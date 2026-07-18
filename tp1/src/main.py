@@ -86,7 +86,12 @@ def bucle_ui(stdscr, snapshot, intervalos, modo_verbose, evento_salida, manejado
     curses.curs_set(0)      # sin cursor parpadeante fuera de pedir_texto()
     stdscr.timeout(150)     # ms -- también marca el ritmo del loop
 
-    estado = display.EstadoUI()
+    filtros = config_ref[0].get("filtros_default", {})
+    estado = display.EstadoUI(
+        filtro_comando=filtros.get("comando") or "",
+        filtro_usuario=filtros.get("usuario") or "",
+        orden=filtros.get("orden") or "cpu",
+    )
 
     def filas_de_la_vista_actual():
         """

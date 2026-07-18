@@ -60,13 +60,16 @@ class EstadoUI:
     no se comparte con nadie -- por eso es una clase común y no un
     Manager.dict()."""
 
-    def __init__(self, vista_inicial="resumen"):
+    def __init__(self, vista_inicial="resumen", filtro_comando="", filtro_usuario="", orden="cpu"):
         self.vista_activa = vista_inicial
         self.indice_seleccionado = 0
         self.pid_pineado = None
-        self.filtro_comando = ""
-        self.filtro_usuario = ""
-        self.orden = "cpu"
+        # Vienen de config.json ("filtros_default") -- se pueden cambiar
+        # en caliente con /, u y c una vez arrancado el programa, esto
+        # solo define el punto de partida.
+        self.filtro_comando = filtro_comando
+        self.filtro_usuario = filtro_usuario
+        self.orden = orden if orden in ORDEN_OPCIONES else "cpu"
         self.mostrar_ayuda = False
 
 
