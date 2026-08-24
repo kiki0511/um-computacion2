@@ -54,7 +54,7 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 | Clase 12 | Redes: fundamentos, UDP, TCP/IP | ✅ Completo |
 | Clase 13 | Sockets TCP: framing, errores, timeouts | ✅ Completo |
 | Clase 14 | Servidores concurrentes | ✅ Completo |
-| TP1 | Monitor de procesos y threads | ✅ Entregado |
+| TP1 | Monitor de procesos y threads | ✅ Aprobado |
 | TP2 | — | ⏳ Pendiente de consigna |
 
 ## Ejercicios obligatorios destacados
