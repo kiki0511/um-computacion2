@@ -1,5 +1,4 @@
 # Computación II — 2026
-
 Universidad de Mendoza · Ingeniería en Informática
 
 Repositorio personal con la resolución de las clases y trabajos prácticos de
@@ -24,7 +23,11 @@ um-computacion2/
 │   ├── Clase_07/              # Multiprocessing: fundamentos
 │   ├── Clase_08/              # Multiprocessing avanzado (Pool, Manager)
 │   ├── Clase_09/              # Threading (GIL, Lock, Queue, daemon threads)
-│   └── Clase_10/              # Sincronización avanzada (RLock, Semaphore, Condition, Barrier)
+│   ├── Clase_10/              # Sincronización avanzada (RLock, Semaphore, Condition, Barrier)
+│   ├── Clase_11/              # Sincronización: race conditions, locks, filósofos
+│   ├── Clase_12/              # Redes: fundamentos, UDP, TCP/IP, DNS
+│   ├── Clase_13/              # Sockets TCP: framing, recv, errores, timeouts
+│   └── Clase_14/              # Servidores concurrentes: threads, fork, pool
 ├── tp1/                       # Trabajo Práctico 1
 └── tp2/                       # Trabajo Práctico 2
 ```
@@ -47,7 +50,11 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 | Clase 08 | Multiprocessing avanzado | ✅ Completo |
 | Clase 09 | Threading | ✅ Completo |
 | Clase 10 | Sincronización avanzada | ✅ Completo |
-| TP1 | Monitor de procesos y threads | ✅ Completo |
+| Clase 11 | Sincronización: locks, semáforos, filósofos | ✅ Completo |
+| Clase 12 | Redes: fundamentos, UDP, TCP/IP | ✅ Completo |
+| Clase 13 | Sockets TCP: framing, errores, timeouts | ✅ Completo |
+| Clase 14 | Servidores concurrentes | ✅ Completo |
+| TP1 | Monitor de procesos y threads | ✅ Entregado |
 | TP2 | — | ⏳ Pendiente de consigna |
 
 ## Ejercicios obligatorios destacados
@@ -59,6 +66,10 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 - **Clase 06:** `value_array.py` (Value/Array compartidos, race condition)
 - **Clase 08:** `procesador_imagenes.py` (procesamiento paralelo con Pool)
 - **Clase 09:** `descargador_paralelo.py` (pool de threads descargando URLs)
+- **Clase 11:** `ej5_readers_writers.py` (Readers-Writers Lock desde cero)
+- **Clase 12:** `ej6_tcp_flujo.py` (TCP como flujo vs UDP con límites de datagrama)
+- **Clase 13:** `ej3_framing.py` (framing por delimitador y por prefijo de longitud)
+- **Clase 14:** `ej3_descuidos_fork.py` (descriptores, zombies y cosecha de hijos)
 
 ## Requisitos
 
@@ -77,5 +88,4 @@ python3 clase/Clase_03/paralelo.py "sleep 2" "sleep 1" "echo hola"
 Cada `README.md` de clase indica el uso específico de cada script.
 
 ---
-
 *Computación II · Ciclo 2026*
