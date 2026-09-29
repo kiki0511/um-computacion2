@@ -234,7 +234,7 @@ Un pool fija la cantidad de workers de antemano.
 
 En el ejercicio obligatorio de la clase 10 construyeron un pool de threads a mano: unos cuantos `threading.Thread` consumiendo URLs de una `queue.Queue`, con su lógica de arranque, de parada y de recolección de resultados. Funcionaba, y valía la pena escribirlo para entender qué hay adentro.
 
-La biblioteca estándar ya trae eso resuelto en `concurrent.futures`, y acá lo necesitamos. La clase 23 lo retoma en profundidad —`ProcessPoolExecutor`, `map`, `as_completed`, manejo de excepciones—; por ahora alcanza con tres ideas.
+La biblioteca estándar ya trae eso resuelto en `concurrent.futures`, y acá lo necesitamos. La clase 22 lo retoma en profundidad —`ProcessPoolExecutor`, `map`, `as_completed`, manejo de excepciones—; por ahora alcanza con tres ideas.
 
 **Un `Executor` es un pool de workers con una cola adentro.** Se crea diciendo cuántos workers querés:
 
