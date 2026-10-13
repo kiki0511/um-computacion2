@@ -34,7 +34,8 @@ um-computacion2/
 │   ├── Clase_17/              # I/O multiplexing: select, poll, epoll, selectors
 │   ├── Clase_18/              # De yield a asyncio: scheduler cooperativo
 │   ├── Clase_19/              # HTTP + FastAPI
-│   └── Clase_20/              # Asyncio en red: streams, gather, semáforos
+│   ├── Clase_20/              # Asyncio en red: streams, gather, semáforos
+│   └── Clase_21/              # Asyncio avanzado: Queue, TaskGroup, executors
 ├── tp1/                       # Trabajo Práctico 1
 └── tp2/                       # Trabajo Práctico 2
 ```
@@ -67,8 +68,9 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 | Clase 18 | De yield a asyncio | ✅ Completo |
 | Clase 19 | HTTP + FastAPI | ✅ Completo |
 | Clase 20 | Asyncio en red | ✅ Completo |
+| Clase 21 | Asyncio avanzado | ✅ Completo |
 | TP1 | Monitor de procesos y threads | ✅ Aprobado |
-| TP2 | — | ⏳ Pendiente de consigna |
+| TP2 | Plataforma de tareas distribuidas | 🚧 En desarrollo (entrega 03/11) |
 
 ## Ejercicios obligatorios destacados
 
@@ -90,12 +92,13 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 - **Clase 18:** `ej2_scheduler.py` (event loop cooperativo con generadores)
 - **Clase 19:** `ej3_api.py` + `ej3_probar_api.py` (API de tareas con FastAPI)
 - **Clase 20:** `ej3_descargas.py` (httpx asíncrono, semáforo, `return_exceptions`)
+- **Clase 21:** `ej3_executor.py` + `ej3d_api_hashear.py` (event loop bloqueado contra `run_in_executor`, threads contra procesos)
 
 ## Requisitos
 
-- Python 3.11+ (la clase 20 usa `asyncio.timeout`)
+- Python 3.11+ (las clases 20 y 21 usan `asyncio.timeout`, `TaskGroup` y `except*`)
 - Docker y Docker Compose
-- Clases 19 y 20: `pip install -r clase/Clase_19/requirements.txt` (fastapi, uvicorn, httpx) y `requests`
+- Clases 19 a 21: `pip install -r clase/Clase_19/requirements.txt` (fastapi, uvicorn, httpx) y `requests`
 - Sistema Linux, macOS o WSL2 (varios ejercicios usan `os.fork`, señales y
   `/proc`, que son específicos de Unix)
 
