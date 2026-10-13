@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      N_WORKERS: "4"
+      TIMEOUT_DEFAULT: "60"
+      PYTHONUNBUFFERED: "1"
+    # Tiempo que Docker espera entre SIGTERM y SIGKILL. El default (10s) puede
+    # cortar el drenaje de tareas del apagado ordenado (semana 2).
+    stop_grace_period: 30s
