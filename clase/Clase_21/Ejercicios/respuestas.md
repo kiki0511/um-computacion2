@@ -12,7 +12,7 @@ Preparación (Python 3.11+, por `TaskGroup` y `except*`): `pip install fastapi u
 | `ej5_esqueleto_tp2.py` | El esqueleto del TP2: cola, pool, workers, cancelación y apagado. `--probar` recorre todos los casos |
 | `ej_extra_adicionales.py` | Reintentos con backoff, `/estadisticas`, prioridad sin inanición, atraso del loop en vivo |
 
-El ejercicio 3 pide **números propios**: los huecos `___` se llenan corriendo `ej3_executor.py` y `ej3d_api_hashear.py --medir` en la Mac. Los dos scripts imprimen al final una tabla lista para pegar acá.
+Los números del ejercicio 3 son **propios**, medidos en mi Mac (Apple Silicon, 12 núcleos, Python 3.14, `spawn`) con `ej3_executor.py` y `ej3d_api_hashear.py --medir --vueltas 15000000`. Los de los otros ejercicios salen de correr cada script tal cual.
 
 ---
 
@@ -116,7 +116,7 @@ Para correrlo en la Mac:
 
 ```bash
 python3 ej3_executor.py            # partes A, B y C (~1 minuto)
-python3 ej3d_api_hashear.py --medir # parte D
+python3 ej3d_api_hashear.py --medir --vueltas 15000000   # parte D
 ```
 
 ### Parte A: el loop bloqueado
@@ -125,11 +125,13 @@ python3 ej3d_api_hashear.py --medir # parte D
 
 | Forma | Duración | Peor atraso del loop |
 |-------|----------|----------------------|
-| Sin executor | ___ s | ___ ms |
-| `ProcessPoolExecutor` | ___ s | ___ ms |
-| `asyncio.to_thread` | ___ s | ___ ms |
+| Sin executor | 0.61 s | 608.3 ms |
+| `ProcessPoolExecutor` | 0.65 s | 5.7 ms |
+| `asyncio.to_thread` | 0.58 s | 17.7 ms |
 
-2. Sin executor, **el atraso es prácticamente toda la duración del cálculo**: ___ ms. Durante ese lapso el loop no ejecuta nada más. En un servidor eso significa que no se aceptan conexiones nuevas, no se responde ningún pedido (ni un `GET` trivial), no se disparan los timeouts y no avanza ninguna otra corrutina. Desde afuera, el servidor parece caído durante ese tiempo.
+   Medido en mi Mac (12 núcleos, `spawn`). Con un M-series, las 3.000.000 vueltas tardan ~0.6 s y no los ~5 s del apunte, pero la proporción es la misma.
+
+2. Sin executor, **el atraso es prácticamente toda la duración del cálculo**: 608 ms de atraso para un cálculo de 0.61 s. Durante ese lapso el loop no ejecuta nada más. En un servidor eso significa que no se aceptan conexiones nuevas, no se responde ningún pedido (ni un `GET` trivial), no se disparan los timeouts y no avanza ninguna otra corrutina. Desde afuera, el servidor parece caído durante ese tiempo.
 3. Mejoró **la disponibilidad del loop**, no el cálculo. El trabajo tarda lo mismo porque es la misma CPU haciendo las mismas vueltas, pero corre en otro lado, y el loop queda libre (atraso de pocos ms) para seguir atendiendo a todos los demás mientras tanto. Es la diferencia entre concurrencia y velocidad: el cliente que pidió el hash espera lo mismo, pero los otros ya no esperan por él.
 4. Porque un `sleep(0.05)` es un timer, y el timer solo se dispara si el loop está libre para atenderlo. Si el loop vuelve a tiempo, el atraso es casi 0. Cualquier demora extra es tiempo en que el loop estuvo ocupado con algo que no cedía el control. Mide justo lo que importa (cuánto tarda el loop en atender un callback listo) sin depender de la red ni del cliente. No sirve medir la duración del cálculo, porque esa no cambia. Es la métrica de "loop lag" que se usa en producción.
 
@@ -139,63 +141,65 @@ python3 ej3d_api_hashear.py --medir # parte D
 
 | Caso | Threads | Procesos |
 |------|---------|----------|
-| 4 tareas CPU | ___ s | ___ s |
-| 1 tarea CPU | ___ s | ___ s |
-| 4 tareas I/O (`time.sleep(2)`) | ___ s | ___ s |
+| 4 tareas CPU | 2.35 s | 0.65 s (3.6x más rápido) |
+| 1 tarea CPU | 0.59 s | 0.58 s |
+| 4 tareas I/O (`time.sleep(2)`) | 2.01 s | 2.00 s |
 
-6. Por el **GIL** (clase 10): dentro de un proceso, un solo thread a la vez ejecuta bytecode de Python. Los 4 threads se turnan, así que tardan ≈ 4 veces lo que tarda una tarea. `hashlib` suelta el GIL solo con entradas de más de ~2 KB, y acá cada vuelta hashea 32 bytes, así que no lo suelta. Cada proceso tiene su propio intérprete y su propio GIL, y con 4 núcleos o más corren de verdad en paralelo: tardan ≈ lo mismo que una sola tarea.
+6. Por el **GIL** (clase 10): dentro de un proceso, un solo thread a la vez ejecuta bytecode de Python. Los 4 threads se turnan, así que tardan ≈ 4 veces lo que tarda una tarea (2.35 s ≈ 4 × 0.59 s). `hashlib` suelta el GIL solo con entradas de más de ~2 KB, y acá cada vuelta hashea 32 bytes, así que no lo suelta. Cada proceso tiene su propio intérprete y su propio GIL, y con 4 núcleos o más corren de verdad en paralelo: tardan ≈ lo mismo que una sola tarea (0.65 s contra 0.58 s).
 7. Con una sola tarea **no hay competencia por el GIL**: el único thread que calcula lo tiene casi todo el tiempo (el loop casi no lo pide, porque está esperando). Los procesos pagan el pickle y el viaje por el pipe, pero eso es despreciable frente a segundos de cálculo. Los dos tardan ≈ lo que tarda el cálculo.
 8. Con `time.sleep` **dejan de diferenciarse**: los dos tardan ≈ 2 s. `time.sleep` suelta el GIL mientras espera, así que los threads esperan en paralelo. Para I/O bloqueante los threads alcanzan y son más baratos que los procesos. Para CPU-bound hacen falta procesos.
 
 ### Parte C: el costo de los procesos
 
-9. Da un error de pickle. En Python 3.13: `AttributeError: Can't get local object 'parte_c.<locals>.<lambda>'`; en versiones anteriores, `PicklingError: Can't pickle <function <lambda>>`. Pasa porque `ProcessPoolExecutor` manda la función y sus argumentos al proceso hijo **pickleados** por un pipe. Una función se picklea **por referencia** (módulo + nombre) y el hijo la vuelve a importar. Una `lambda`, o una función definida adentro de otra, no tiene un nombre importable. Por eso las funciones del executor tienen que estar a nivel de módulo.
+9. Da un error de pickle: `PicklingError: Can't pickle local object <function parte_c.<locals>.<lambda> ...>`. El mensaje cambia según la versión de Python (en otras sale `AttributeError: Can't get local object ...`), pero la causa es la misma. Pasa porque `ProcessPoolExecutor` manda la función y sus argumentos al proceso hijo **pickleados** por un pipe. Una función se picklea **por referencia** (módulo + nombre) y el hijo la vuelve a importar. Una `lambda`, o una función definida adentro de otra, no tiene un nombre importable. Por eso las funciones del executor tienen que estar a nivel de módulo.
 10. Comparación de lo que cuesta cada viaje al pool:
 
 | Argumento | Tiempo por llamada |
 |-----------|--------------------|
-| Un número | ___ ms |
-| Lista de 1 millón de números (~4.9 MB pickleados) | ___ ms |
-| Referencia: `sum()` de esa lista en el mismo proceso | ___ ms |
+| Un número | 0.22 ms |
+| Lista de 1 millón de números (~4.9 MB pickleados) | 19.70 ms |
+| Referencia: `sum()` de esa lista en el mismo proceso | 2.11 ms |
 
-   El argumento se serializa, viaja por el pipe y se deserializa en el hijo: el costo crece con el tamaño. Con la lista grande, **el viaje cuesta más que el cálculo**. Conviene mandar poco (un nombre de archivo, un rango) y que el hijo consiga los datos, o mandar trabajo que valga el viaje.
+   El argumento se serializa, viaja por el pipe y se deserializa en el hijo: el costo crece con el tamaño. Con la lista grande, **el viaje cuesta más que el cálculo**: casi 10 veces lo que tarda sumarla en el mismo proceso. Conviene mandar poco (un nombre de archivo, un rango) y que el hijo consiga los datos, o mandar trabajo que valga el viaje.
 11. Porque crear el pool es **crear procesos**. En macOS con `spawn` eso es arrancar un intérprete nuevo e importar el módulo entero, decenas de ms. Medido:
 
 | | Tiempo por tarea |
 |-|------------------|
-| Pool nuevo por tarea | ___ ms |
-| Pool reutilizado | ___ ms |
+| Pool nuevo por tarea | 51.88 ms |
+| Pool reutilizado | 0.16 ms (324x más barato) |
 
    Con el pool creado una vez en el `lifespan`, cada tarea solo paga el viaje de ida y vuelta.
 
 ### Parte D: en una API (`ej3d_api_hashear.py`)
 
 12. `POST /hashear` es un `async def` que llama a `hashear()` directamente, sin executor.
-13. y 15. Lanzando el POST pesado y midiendo `GET /tareas` mientras corre:
+13. y 15. Con 15.000.000 de vueltas (~3 s, para que entren varios `GET` durante el cálculo), lanzando el POST pesado y pidiendo `GET /tareas` cada 100 ms mientras corre:
 
-`GET /tareas` en reposo: ___ ms
+`GET /tareas` en reposo: 0.7 ms
 
-| Endpoint | Duración del cálculo | Peor `GET /tareas` durante el cálculo |
-|----------|----------------------|---------------------------------------|
-| `/hashear` (sin executor) | ___ s | ___ ms |
-| `/hashear-executor` | ___ s | ___ ms |
-| `/hashear-sync` (`def`, para comparar) | ___ s | ___ ms |
+| Endpoint | Duración del cálculo | Peor `GET /tareas` durante el cálculo | `GET` atendidos durante el cálculo |
+|----------|----------------------|---------------------------------------|------------------------------------|
+| `/hashear` (sin executor) | 2.81 s | **2513.7 ms** | 1 |
+| `/hashear-executor` | 3.25 s | **1.3 ms** | 30 |
+| `/hashear-sync` (`def`, para comparar) | 2.96 s | 26.1 ms | 22 |
 
-   Sin executor, el `GET` tarda **lo que le falta al cálculo**: el pedido llega al socket, pero nadie lo lee hasta que el loop se libera. Con executor responde como en reposo.
+   Sin executor, el `GET` tardó **2.5 s**, que es lo que le faltaba al cálculo: se lanzó 0.3 s después del POST y quedó esperando el resto. El pedido llega al socket, pero nadie lo lee hasta que el loop se libera, así que en casi 3 s se atendió un único `GET`. Con executor respondió en **1.3 ms**, igual que en reposo (0.7 ms), y entraron 30 `GET` mientras se calculaba. Es una diferencia de ~1900 veces, y es la **medición 2 del TP2**.
+
+   El cálculo con executor tardó un poco más (3.25 s contra 2.81 s) por el viaje al proceso hijo y porque el proceso del pool arranca en frío. El trabajo no se hace más rápido: se hace en otro lado.
 14. Con `run_in_executor` y el `ProcessPoolExecutor` creado en el `lifespan`, el `GET` no se entera del cálculo.
 
-   El endpoint `/hashear-sync` es un `def` común, y FastAPI lo corre en su threadpool. No congela el loop, pero comparte el GIL con él: el loop recibe turnos cada ~5 ms (el intervalo de cambio del GIL), así que el `GET` tarda algunos ms más que con procesos. Para CPU de verdad, procesos.
+   El endpoint `/hashear-sync` es un `def` común, y FastAPI lo corre en su threadpool. No congela el loop, pero comparte el GIL con él: el loop recibe turnos cada ~5 ms (el intervalo de cambio del GIL), así que el `GET` tardó hasta 26.1 ms, contra 1.3 ms con procesos. Sirve para no congelar el loop, pero para CPU de verdad, procesos.
 
 ### Verificación
 
-- [ ] Los tres tiempos y los tres atrasos, con números propios
+- [x] Los tres tiempos y los tres atrasos, con números propios
 - [x] Explicaste qué significa el atraso para un servidor
 - [x] Explicaste qué mejora el executor si el trabajo tarda lo mismo
-- [ ] Mediste threads contra procesos con 4 tareas CPU-bound
+- [x] Mediste threads contra procesos con 4 tareas CPU-bound
 - [x] Explicaste la diferencia con el GIL
-- [ ] Probaste qué pasa con una tarea sola y explicaste por qué empatan
+- [x] Probaste qué pasa con una tarea sola y explicaste por qué empatan
 - [x] Probaste el error de pasar una lambda al executor
-- [ ] Hiciste la medición en una API real (parte D)
+- [x] Hiciste la medición en una API real (parte D)
 
 ---
 

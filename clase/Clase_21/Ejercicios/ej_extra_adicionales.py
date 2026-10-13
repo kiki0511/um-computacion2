@@ -206,10 +206,20 @@ async def estadisticas(request: Request):
 # --probar
 # ─────────────────────────────────────────────
 
+def puerto_libre():
+    """Pide al sistema un puerto libre (bind al puerto 0) y lo devuelve.
+    Así --medir/--probar no chocan con otro servidor que ya esté escuchando."""
+    import socket
+    with socket.socket() as s:
+        s.bind(('127.0.0.1', 0))
+        return s.getsockname()[1]
+
+
 class Servidor:
     """Levanta esta misma API con uvicorn en otro proceso, con el entorno dado."""
-    def __init__(self, puerto, **entorno):
+    def __init__(self, **entorno):
         import httpx
+        puerto = puerto_libre()
         os.environ.setdefault('NO_PROXY', '127.0.0.1,localhost')
         env = {**os.environ, **entorno}
         self.srv = subprocess.Popen(
@@ -218,6 +228,8 @@ class Servidor:
             cwd=os.path.dirname(os.path.abspath(__file__)), env=env)
         self.c = httpx.Client(base_url=f'http://127.0.0.1:{puerto}', timeout=30)
         for _ in range(100):
+            if self.srv.poll() is not None:
+                raise RuntimeError('uvicorn terminó al arrancar (ver el error de arriba)')
             try:
                 self.c.get('/estadisticas')
                 break
@@ -245,7 +257,7 @@ class Servidor:
 
 
 def demo_prioridad(envejecimiento):
-    with Servidor(8026, WORKERS='1', ENVEJECIMIENTO=str(envejecimiento)) as s:
+    with Servidor(WORKERS='1', ENVEJECIMIENTO=str(envejecimiento)) as s:
         s.post('esperar', prioridad=5, segundos=0.3)      # ocupa al único worker
         baja = s.post('esperar', prioridad=1, segundos=0.2)
         altas = []
@@ -267,7 +279,7 @@ def probar():
         print(f'  {nombre:<36} la de prioridad 1 salió {pos}ª de 16')
     print('  -> sin envejecimiento sale última: si las altas no paran, no sale nunca\n')
 
-    with Servidor(8027, WORKERS='1') as s:
+    with Servidor(WORKERS='1') as s:
         print('=== 1. Reintentos con backoff (máximo 3, base 0.2 s) ===')
         ok = s.post('inestable', fallas=2)
         mal = s.post('inestable', fallas=9)

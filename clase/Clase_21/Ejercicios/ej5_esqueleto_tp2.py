@@ -264,9 +264,18 @@ async def cancelar(tid: int):
 # --probar: recorre los casos contra un servidor real
 # ─────────────────────────────────────────────
 
+def puerto_libre():
+    """Pide al sistema un puerto libre (bind al puerto 0) y lo devuelve.
+    Así --medir/--probar no chocan con otro servidor que ya esté escuchando."""
+    import socket
+    with socket.socket() as s:
+        s.bind(('127.0.0.1', 0))
+        return s.getsockname()[1]
+
+
 def probar():
     import httpx
-    puerto = 8025
+    puerto = puerto_libre()
     os.environ.setdefault('NO_PROXY', '127.0.0.1,localhost')
     env = {**os.environ, 'WORKERS': '3'}
     srv = subprocess.Popen(
@@ -276,6 +285,8 @@ def probar():
     c = httpx.Client(base_url=f'http://127.0.0.1:{puerto}', timeout=30)
     try:
         for _ in range(100):
+            if srv.poll() is not None:
+                raise RuntimeError('uvicorn terminó al arrancar (ver el error de arriba)')
             try:
                 c.get('/tareas')
                 break

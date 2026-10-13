@@ -32,7 +32,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 
-PUERTO = 8021
+PUERTO = 8021                 # --medir lo reemplaza por uno libre
 VUELTAS = 3_000_000
 
 
@@ -139,15 +139,25 @@ async def medir(vueltas):
         print(f'| `{ruta}` | {seg:.2f} s | {peor * 1000:.1f} ms |')
 
 
-def esperar_servidor():
+def esperar_servidor(srv):
     import httpx
     for _ in range(100):
+        if srv.poll() is not None:
+            raise RuntimeError('uvicorn terminó al arrancar (ver el error de arriba)')
         try:
             httpx.get(f'http://127.0.0.1:{PUERTO}/tareas', timeout=0.5)
             return
         except httpx.HTTPError:
             time.sleep(0.1)
     raise RuntimeError('el servidor no levantó')
+
+def puerto_libre():
+    """Pide al sistema un puerto libre (bind al puerto 0) y lo devuelve.
+    Así --medir/--probar no chocan con otro servidor que ya esté escuchando."""
+    import socket
+    with socket.socket() as s:
+        s.bind(('127.0.0.1', 0))
+        return s.getsockname()[1]
 
 
 def main():
@@ -159,6 +169,8 @@ def main():
         uvicorn.run(app, host='127.0.0.1', port=8000)
         return
 
+    global PUERTO
+    PUERTO = puerto_libre()
     os.environ.setdefault('NO_PROXY', '127.0.0.1,localhost')
     print(f'=== Parte D: medición 2 del TP2 ({vueltas:,} vueltas) ===\n')
     srv = subprocess.Popen(
@@ -166,7 +178,7 @@ def main():
          '--host', '127.0.0.1', '--port', str(PUERTO), '--log-level', 'warning'],
         cwd=os.path.dirname(os.path.abspath(__file__)))
     try:
-        esperar_servidor()
+        esperar_servidor(srv)
         asyncio.run(medir(vueltas))
     finally:
         srv.terminate()
