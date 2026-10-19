@@ -6,7 +6,13 @@ services:
     environment:
       N_WORKERS: "4"
       TIMEOUT_DEFAULT: "60"
+      TIMEOUT_APAGADO: "20"
+      # Para la medición 2: USAR_EXECUTOR=false docker compose up --build
+      USAR_EXECUTOR: "${USAR_EXECUTOR:-true}"
       PYTHONUNBUFFERED: "1"
-    # Tiempo que Docker espera entre SIGTERM y SIGKILL. El default (10s) puede
-    # cortar el drenaje de tareas del apagado ordenado (semana 2).
+    volumes:
+      # Los estado_<timestamp>.json quedan en tp2/estados/ del host
+      - ./estados:/tp2/estados
+    # Tiempo que Docker espera entre SIGTERM y SIGKILL. Tiene que ser mayor
+    # que TIMEOUT_APAGADO, o Docker mata el proceso antes del volcado.
     stop_grace_period: 30s

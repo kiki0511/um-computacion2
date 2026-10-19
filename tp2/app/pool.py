@@ -9,10 +9,12 @@ No hace falta Lock: los workers corren todos en el mismo hilo (el del event
 loop) y solo se ceden el control en los `await`. Entre un `await` y el
 siguiente, ningún otro worker puede tocar el estado compartido.
 
-Cancelación de una tarea en ejecución: el worker NO ejecuta la tarea
-directamente, sino que la envuelve en su propia asyncio.Task (`subtarea`).
-Así el DELETE puede cancelar esa subtarea sin matar al worker, que sigue
-vivo para la próxima tarea.
+Cada tarea corre en su propia asyncio.Task (la "subtarea"), separada del
+worker. Eso permite:
+- Cancelar una tarea en ejecución (DELETE) sin matar al worker.
+- Ponerle un timeout a la tarea sin que afecte al worker.
+- Que una excepción de la tarea no mate al worker: queda guardada en la
+  subtarea y el worker solo la lee.
 """
 
 import asyncio
@@ -33,6 +35,8 @@ class Pool:
         self._workers: list[asyncio.Task] = []
         # id de tarea -> subtarea que la está ejecutando ahora
         self.en_curso: dict[str, asyncio.Task] = {}
+        # Pasa a False al recibir SIGINT/SIGTERM: no se aceptan ni arrancan tareas nuevas
+        self.aceptando = True
 
     # ---------------------------------------------------------------- ciclo de vida
 
@@ -43,11 +47,32 @@ class Pool:
             self._workers.append(w)
         log.info("Pool iniciado con %d workers", self.n_workers)
 
+    def dejar_de_aceptar(self) -> None:
+        self.aceptando = False
+
+    async def drenar(self, limite: float) -> None:
+        """
+        Apagado, paso 1: espera hasta `limite` segundos a que terminen las
+        tareas en curso. Las pendientes no se arrancan (quedan 'pendiente'
+        en el volcado). Lo que no termine a tiempo lo cancela `detener()`.
+        """
+        self.dejar_de_aceptar()
+        if not self.en_curso:
+            return
+        log.info("Esperando hasta %.0fs a %d tareas en curso", limite, len(self.en_curso))
+        _, sin_terminar = await asyncio.wait(list(self.en_curso.values()), timeout=limite)
+        if sin_terminar:
+            log.warning("%d tareas no terminaron a tiempo: se cancelan", len(sin_terminar))
+
     async def detener(self) -> None:
-        """Cancela los workers y espera a que terminen (sin corrutinas huérfanas)."""
+        """
+        Apagado, paso 2: cancela los workers y espera a que terminen. Cada
+        worker, al ser cancelado, cancela su subtarea y espera a que libere
+        sus recursos antes de salir: no quedan corrutinas huérfanas.
+        """
         for w in self._workers:
             w.cancel()
-        # gather con return_exceptions para que un CancelledError no corte la espera
+        # return_exceptions: que el CancelledError de cada worker no corte la espera
         await asyncio.gather(*self._workers, return_exceptions=True)
         self._workers.clear()
         log.info("Pool detenido")
@@ -75,8 +100,8 @@ class Pool:
             tarea.finalizada = ahora()
             return True
 
-        # Está ejecutando: cancelamos su subtarea. El worker se entera porque
-        # su `await subtarea` lanza CancelledError, y ahí marca el estado.
+        # Está ejecutando: cancelamos su subtarea. El worker la está esperando
+        # y, cuando termine de cancelarse, registra el estado final.
         subtarea = self.en_curso.get(tarea_id)
         if subtarea is not None:
             subtarea.cancel()
@@ -95,6 +120,8 @@ class Pool:
                 tarea = self.registro.obtener(tarea_id)
                 if tarea is None or tarea.estado != Estado.PENDIENTE:
                     continue  # fue cancelada mientras esperaba en la cola
+                if not self.aceptando:
+                    continue  # apagándonos: queda 'pendiente' para el volcado
                 await self._ejecutar(tarea, numero)
             finally:
                 self.cola.task_done()
@@ -104,31 +131,54 @@ class Pool:
         tarea.iniciada = ahora()
         log.info("worker-%d ejecuta %s (%s)", numero, tarea.id, tarea.tipo.value)
 
-        subtarea = asyncio.create_task(tareas.ejecutar(tarea.tipo, tarea.parametros))
+        subtarea = asyncio.create_task(self._correr(tarea), name=f"tarea-{tarea.id}")
         self.en_curso[tarea.id] = subtarea
         try:
-            tarea.resultado = await subtarea
-            tarea.estado = Estado.COMPLETADA
-
+            # asyncio.wait (y no `await subtarea`) porque:
+            # - no relanza la excepción de la subtarea: la leemos después.
+            # - si cancelan AL WORKER, no cancela sola a la subtarea: lo
+            #   hacemos nosotros abajo, y esperamos a que termine.
+            await asyncio.wait({subtarea})
         except asyncio.CancelledError:
-            # Dos casos posibles que lanzan el mismo error:
-            # a) cancelaron la subtarea (DELETE)  -> la tarea queda cancelada,
-            #    el worker sigue vivo.
-            # b) cancelaron AL WORKER (apagado)   -> hay que cancelar también la
-            #    subtarea y dejar que el CancelledError siga subiendo.
-            # `cancelling()` (Python 3.11+) dice si la cancelación es para esta
-            # corrutina (el worker) o vino de la subtarea.
-            tarea.estado = Estado.CANCELADA
-            if asyncio.current_task().cancelling():
-                subtarea.cancel()
-                raise
+            # Cancelaron al worker (apagado del servidor).
+            subtarea.cancel()
+            await asyncio.wait({subtarea})  # que libere sus recursos antes de seguir
+            self._registrar_final(tarea, subtarea, por_apagado=True)
+            raise  # el worker tiene que terminar: propagamos la cancelación
+        else:
+            self._registrar_final(tarea, subtarea)
+        finally:
+            self.en_curso.pop(tarea.id, None)
 
-        except Exception as e:
+    async def _correr(self, tarea: Tarea):
+        """Lo que corre dentro de la subtarea: la tarea real, con su timeout."""
+        # Al vencer, asyncio.timeout cancela lo que está adentro y lanza TimeoutError.
+        async with asyncio.timeout(tarea.timeout):
+            return await tareas.ejecutar(tarea.tipo, tarea.parametros)
+
+    def _registrar_final(self, tarea: Tarea, subtarea: asyncio.Task, por_apagado: bool = False) -> None:
+        """
+        El estado final sale de CÓMO terminó la subtarea. Si terminó bien justo
+        antes del apagado, queda 'completada' aunque el worker se esté cancelando.
+        """
+        tarea.finalizada = ahora()
+
+        if subtarea.cancelled():
+            tarea.estado = Estado.CANCELADA
+            if por_apagado:
+                tarea.error = "cancelada por apagado del servidor"
+            return
+
+        error = subtarea.exception()
+        if error is None:
+            tarea.resultado = subtarea.result()
+            tarea.estado = Estado.COMPLETADA
+        elif isinstance(error, TimeoutError):
+            tarea.estado = Estado.FALLIDA
+            tarea.error = f"timeout: superó los {tarea.timeout:g}s"
+            log.warning("tarea %s: %s", tarea.id, tarea.error)
+        else:
             # Excepción no capturada de la tarea: la tarea falla, el worker NO muere.
             tarea.estado = Estado.FALLIDA
-            tarea.error = f"{type(e).__name__}: {e}"
+            tarea.error = f"{type(error).__name__}: {error}"
             log.warning("tarea %s falló: %s", tarea.id, tarea.error)
-
-        finally:
-            tarea.finalizada = ahora()
-            self.en_curso.pop(tarea.id, None)

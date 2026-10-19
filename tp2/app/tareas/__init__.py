@@ -1,26 +1,23 @@
 """
 Despacho de tareas: según el tipo, a qué función de validación y de
 ejecución corresponde.
-
-Semana 1: solo `esperar` está implementada. `descargar` y `hashear`
-se agregan en la semana 2.
 """
 
 from typing import Any
 
 from ..modelos import TipoTarea
-from . import esperar
+from . import descargar, esperar, hashear
 
 # tipo -> (validar, ejecutar)
 _IMPLEMENTADAS = {
+    TipoTarea.DESCARGAR: (descargar.validar, descargar.ejecutar),
+    TipoTarea.HASHEAR: (hashear.validar, hashear.ejecutar),
     TipoTarea.ESPERAR: (esperar.validar, esperar.ejecutar),
 }
 
 
 def validar(tipo: TipoTarea, parametros: dict[str, Any]) -> None:
-    """Lanza ValueError si el tipo no está implementado o los parámetros son inválidos."""
-    if tipo not in _IMPLEMENTADAS:
-        raise ValueError(f"el tipo '{tipo.value}' todavía no está implementado")
+    """Lanza ValueError si los parámetros son inválidos."""
     validador, _ = _IMPLEMENTADAS[tipo]
     validador(parametros)
 

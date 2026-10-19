@@ -1,0 +1,4 @@
+estados/
+__pycache__/
+*.pyc
+.git
