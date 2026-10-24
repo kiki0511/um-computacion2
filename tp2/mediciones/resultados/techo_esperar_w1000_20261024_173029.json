@@ -1,0 +1,52 @@
+{
+  "tipo": "esperar",
+  "parametros": {
+    "segundos": 1.0
+  },
+  "filas": [
+    {
+      "tareas": 1,
+      "total": 1.00505,
+      "cola_prom": 0.000206,
+      "ejecucion_prom": 1.004844,
+      "por_segundo": 0.9949753743594846,
+      "fallidas": 0,
+      "ideal": 1.0
+    },
+    {
+      "tareas": 64,
+      "total": 1.03022,
+      "cola_prom": 0.001741109375,
+      "ejecucion_prom": 1.002307984375,
+      "por_segundo": 62.122653413833945,
+      "fallidas": 0,
+      "ideal": 1.0
+    },
+    {
+      "tareas": 256,
+      "total": 1.107316,
+      "cola_prom": 0.00134444921875,
+      "ejecucion_prom": 1.0022469375,
+      "por_segundo": 231.18965137323042,
+      "fallidas": 0,
+      "ideal": 1.0
+    },
+    {
+      "tareas": 1000,
+      "total": 1.326646,
+      "cola_prom": 0.001828109,
+      "ejecucion_prom": 1.002646989,
+      "por_segundo": 753.78058653175,
+      "fallidas": 0,
+      "ideal": 1.0
+    }
+  ],
+  "entorno": {
+    "host": "Darwin arm64",
+    "workers": 1000,
+    "executor": {
+      "usar": true,
+      "procesos": 12
+    }
+  }
+}

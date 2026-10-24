@@ -1,0 +1,813 @@
+{
+  "origen": "20 sitios reales",
+  "urls": [
+    "https://www.python.org",
+    "https://docs.python.org/3/",
+    "https://fastapi.tiangolo.com",
+    "https://www.python-httpx.org",
+    "https://github.com",
+    "https://www.wikipedia.org",
+    "https://es.wikipedia.org/wiki/Asyncio",
+    "https://www.um.edu.ar",
+    "https://www.google.com",
+    "https://www.mozilla.org",
+    "https://www.debian.org",
+    "https://www.kernel.org",
+    "https://www.docker.com",
+    "https://pypi.org",
+    "https://www.rust-lang.org",
+    "https://www.apache.org",
+    "https://www.cloudflare.com",
+    "https://www.mercadolibre.com.ar",
+    "https://www.clarin.com",
+    "https://www.lanacion.com.ar"
+  ],
+  "corridas": {
+    "secuencial": [
+      7.9031,
+      4.495,
+      3.7961
+    ],
+    "concurrente": [
+      1.6878,
+      1.6554,
+      1.7289
+    ]
+  },
+  "errores": 0,
+  "detalle": [
+    {
+      "corrida": 1,
+      "modo": "secuencial",
+      "total_segundos": 7.9031,
+      "descargas": [
+        {
+          "url": "https://www.python.org",
+          "estado": 200,
+          "bytes": 53169,
+          "segundos": 0.0958
+        },
+        {
+          "url": "https://docs.python.org/3/",
+          "estado": 200,
+          "bytes": 19625,
+          "segundos": 0.0723
+        },
+        {
+          "url": "https://fastapi.tiangolo.com",
+          "estado": 200,
+          "bytes": 154024,
+          "segundos": 0.4991
+        },
+        {
+          "url": "https://www.python-httpx.org",
+          "estado": 200,
+          "bytes": 31898,
+          "segundos": 0.3847
+        },
+        {
+          "url": "https://github.com",
+          "estado": 200,
+          "bytes": 580274,
+          "segundos": 0.6595
+        },
+        {
+          "url": "https://www.wikipedia.org",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.207
+        },
+        {
+          "url": "https://es.wikipedia.org/wiki/Asyncio",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.2399
+        },
+        {
+          "url": "https://www.um.edu.ar",
+          "estado": 200,
+          "bytes": 154946,
+          "segundos": 2.0865
+        },
+        {
+          "url": "https://www.google.com",
+          "estado": 200,
+          "bytes": 86419,
+          "segundos": 0.2132
+        },
+        {
+          "url": "https://www.mozilla.org",
+          "estado": 200,
+          "bytes": 47808,
+          "segundos": 0.083
+        },
+        {
+          "url": "https://www.debian.org",
+          "estado": 200,
+          "bytes": 15864,
+          "segundos": 0.7044
+        },
+        {
+          "url": "https://www.kernel.org",
+          "estado": 200,
+          "bytes": 19152,
+          "segundos": 0.0831
+        },
+        {
+          "url": "https://www.docker.com",
+          "estado": 200,
+          "bytes": 505462,
+          "segundos": 0.1854
+        },
+        {
+          "url": "https://pypi.org",
+          "estado": 200,
+          "bytes": 27884,
+          "segundos": 0.0667
+        },
+        {
+          "url": "https://www.rust-lang.org",
+          "estado": 200,
+          "bytes": 18594,
+          "segundos": 0.714
+        },
+        {
+          "url": "https://www.apache.org",
+          "estado": 200,
+          "bytes": 52852,
+          "segundos": 0.0968
+        },
+        {
+          "url": "https://www.cloudflare.com",
+          "estado": 200,
+          "bytes": 1333880,
+          "segundos": 0.6508
+        },
+        {
+          "url": "https://www.mercadolibre.com.ar",
+          "estado": 403,
+          "bytes": 2585,
+          "segundos": 0.1245
+        },
+        {
+          "url": "https://www.clarin.com",
+          "estado": 200,
+          "bytes": 4093752,
+          "segundos": 0.4672
+        },
+        {
+          "url": "https://www.lanacion.com.ar",
+          "estado": 200,
+          "bytes": 1092178,
+          "segundos": 0.2689
+        }
+      ]
+    },
+    {
+      "corrida": 1,
+      "modo": "concurrente",
+      "total_segundos": 1.6878,
+      "descargas": [
+        {
+          "url": "https://www.python.org",
+          "estado": 200,
+          "bytes": 53169,
+          "segundos": 0.1024
+        },
+        {
+          "url": "https://docs.python.org/3/",
+          "estado": 200,
+          "bytes": 19625,
+          "segundos": 0.0795
+        },
+        {
+          "url": "https://fastapi.tiangolo.com",
+          "estado": 200,
+          "bytes": 154024,
+          "segundos": 0.7846
+        },
+        {
+          "url": "https://www.python-httpx.org",
+          "estado": 200,
+          "bytes": 31898,
+          "segundos": 0.2655
+        },
+        {
+          "url": "https://github.com",
+          "estado": 200,
+          "bytes": 580274,
+          "segundos": 1.2161
+        },
+        {
+          "url": "https://www.wikipedia.org",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.5783
+        },
+        {
+          "url": "https://es.wikipedia.org/wiki/Asyncio",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.6103
+        },
+        {
+          "url": "https://www.um.edu.ar",
+          "estado": 200,
+          "bytes": 154946,
+          "segundos": 1.6823
+        },
+        {
+          "url": "https://www.google.com",
+          "estado": 200,
+          "bytes": 86416,
+          "segundos": 0.1248
+        },
+        {
+          "url": "https://www.mozilla.org",
+          "estado": 200,
+          "bytes": 47808,
+          "segundos": 0.0287
+        },
+        {
+          "url": "https://www.debian.org",
+          "estado": 200,
+          "bytes": 15864,
+          "segundos": 1.204
+        },
+        {
+          "url": "https://www.kernel.org",
+          "estado": 200,
+          "bytes": 19152,
+          "segundos": 0.0287
+        },
+        {
+          "url": "https://www.docker.com",
+          "estado": 200,
+          "bytes": 505462,
+          "segundos": 0.0406
+        },
+        {
+          "url": "https://pypi.org",
+          "estado": 200,
+          "bytes": 27884,
+          "segundos": 0.0284
+        },
+        {
+          "url": "https://www.rust-lang.org",
+          "estado": 200,
+          "bytes": 18594,
+          "segundos": 0.0529
+        },
+        {
+          "url": "https://www.apache.org",
+          "estado": 200,
+          "bytes": 52852,
+          "segundos": 0.0284
+        },
+        {
+          "url": "https://www.cloudflare.com",
+          "estado": 200,
+          "bytes": 1333880,
+          "segundos": 0.3604
+        },
+        {
+          "url": "https://www.mercadolibre.com.ar",
+          "estado": 403,
+          "bytes": 2585,
+          "segundos": 0.0402
+        },
+        {
+          "url": "https://www.clarin.com",
+          "estado": 200,
+          "bytes": 4093752,
+          "segundos": 0.8229
+        },
+        {
+          "url": "https://www.lanacion.com.ar",
+          "estado": 200,
+          "bytes": 1092178,
+          "segundos": 0.0917
+        }
+      ]
+    },
+    {
+      "corrida": 2,
+      "modo": "secuencial",
+      "total_segundos": 4.495,
+      "descargas": [
+        {
+          "url": "https://www.python.org",
+          "estado": 200,
+          "bytes": 53169,
+          "segundos": 0.0273
+        },
+        {
+          "url": "https://docs.python.org/3/",
+          "estado": 200,
+          "bytes": 19625,
+          "segundos": 0.0175
+        },
+        {
+          "url": "https://fastapi.tiangolo.com",
+          "estado": 200,
+          "bytes": 154024,
+          "segundos": 0.0728
+        },
+        {
+          "url": "https://www.python-httpx.org",
+          "estado": 200,
+          "bytes": 31898,
+          "segundos": 0.0263
+        },
+        {
+          "url": "https://github.com",
+          "estado": 200,
+          "bytes": 580274,
+          "segundos": 0.5189
+        },
+        {
+          "url": "https://www.wikipedia.org",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0572
+        },
+        {
+          "url": "https://es.wikipedia.org/wiki/Asyncio",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0658
+        },
+        {
+          "url": "https://www.um.edu.ar",
+          "estado": 200,
+          "bytes": 154947,
+          "segundos": 1.6746
+        },
+        {
+          "url": "https://www.google.com",
+          "estado": 200,
+          "bytes": 86426,
+          "segundos": 0.1767
+        },
+        {
+          "url": "https://www.mozilla.org",
+          "estado": 200,
+          "bytes": 47808,
+          "segundos": 0.0213
+        },
+        {
+          "url": "https://www.debian.org",
+          "estado": 200,
+          "bytes": 15864,
+          "segundos": 0.2317
+        },
+        {
+          "url": "https://www.kernel.org",
+          "estado": 200,
+          "bytes": 19152,
+          "segundos": 0.0207
+        },
+        {
+          "url": "https://www.docker.com",
+          "estado": 200,
+          "bytes": 505462,
+          "segundos": 0.034
+        },
+        {
+          "url": "https://pypi.org",
+          "estado": 200,
+          "bytes": 27884,
+          "segundos": 0.0173
+        },
+        {
+          "url": "https://www.rust-lang.org",
+          "estado": 200,
+          "bytes": 18594,
+          "segundos": 0.0336
+        },
+        {
+          "url": "https://www.apache.org",
+          "estado": 200,
+          "bytes": 52852,
+          "segundos": 0.0197
+        },
+        {
+          "url": "https://www.cloudflare.com",
+          "estado": 200,
+          "bytes": 1333880,
+          "segundos": 0.2945
+        },
+        {
+          "url": "https://www.mercadolibre.com.ar",
+          "estado": 403,
+          "bytes": 2585,
+          "segundos": 0.117
+        },
+        {
+          "url": "https://www.clarin.com",
+          "estado": 200,
+          "bytes": 4093752,
+          "segundos": 0.4448
+        },
+        {
+          "url": "https://www.lanacion.com.ar",
+          "estado": 200,
+          "bytes": 1092179,
+          "segundos": 0.623
+        }
+      ]
+    },
+    {
+      "corrida": 2,
+      "modo": "concurrente",
+      "total_segundos": 1.6554,
+      "descargas": [
+        {
+          "url": "https://www.python.org",
+          "estado": 200,
+          "bytes": 53169,
+          "segundos": 0.0358
+        },
+        {
+          "url": "https://docs.python.org/3/",
+          "estado": 200,
+          "bytes": 19625,
+          "segundos": 0.0337
+        },
+        {
+          "url": "https://fastapi.tiangolo.com",
+          "estado": 200,
+          "bytes": 154024,
+          "segundos": 0.089
+        },
+        {
+          "url": "https://www.python-httpx.org",
+          "estado": 200,
+          "bytes": 31898,
+          "segundos": 0.0327
+        },
+        {
+          "url": "https://github.com",
+          "estado": 200,
+          "bytes": 580274,
+          "segundos": 0.4478
+        },
+        {
+          "url": "https://www.wikipedia.org",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0624
+        },
+        {
+          "url": "https://es.wikipedia.org/wiki/Asyncio",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0717
+        },
+        {
+          "url": "https://www.um.edu.ar",
+          "estado": 200,
+          "bytes": 154947,
+          "segundos": 1.6498
+        },
+        {
+          "url": "https://www.google.com",
+          "estado": 200,
+          "bytes": 86417,
+          "segundos": 0.1895
+        },
+        {
+          "url": "https://www.mozilla.org",
+          "estado": 200,
+          "bytes": 47808,
+          "segundos": 0.0279
+        },
+        {
+          "url": "https://www.debian.org",
+          "estado": 200,
+          "bytes": 15864,
+          "segundos": 0.24
+        },
+        {
+          "url": "https://www.kernel.org",
+          "estado": 200,
+          "bytes": 19152,
+          "segundos": 0.0274
+        },
+        {
+          "url": "https://www.docker.com",
+          "estado": 200,
+          "bytes": 505462,
+          "segundos": 0.032
+        },
+        {
+          "url": "https://pypi.org",
+          "estado": 200,
+          "bytes": 27884,
+          "segundos": 0.028
+        },
+        {
+          "url": "https://www.rust-lang.org",
+          "estado": 200,
+          "bytes": 18594,
+          "segundos": 0.0474
+        },
+        {
+          "url": "https://www.apache.org",
+          "estado": 200,
+          "bytes": 52852,
+          "segundos": 0.0271
+        },
+        {
+          "url": "https://www.cloudflare.com",
+          "estado": 200,
+          "bytes": 1333880,
+          "segundos": 0.3186
+        },
+        {
+          "url": "https://www.mercadolibre.com.ar",
+          "estado": 403,
+          "bytes": 2585,
+          "segundos": 0.0402
+        },
+        {
+          "url": "https://www.clarin.com",
+          "estado": 200,
+          "bytes": 4093752,
+          "segundos": 0.3348
+        },
+        {
+          "url": "https://www.lanacion.com.ar",
+          "estado": 200,
+          "bytes": 1092179,
+          "segundos": 0.1823
+        }
+      ]
+    },
+    {
+      "corrida": 3,
+      "modo": "secuencial",
+      "total_segundos": 3.7961,
+      "descargas": [
+        {
+          "url": "https://www.python.org",
+          "estado": 200,
+          "bytes": 53169,
+          "segundos": 0.0208
+        },
+        {
+          "url": "https://docs.python.org/3/",
+          "estado": 200,
+          "bytes": 19625,
+          "segundos": 0.018
+        },
+        {
+          "url": "https://fastapi.tiangolo.com",
+          "estado": 200,
+          "bytes": 154024,
+          "segundos": 0.0737
+        },
+        {
+          "url": "https://www.python-httpx.org",
+          "estado": 200,
+          "bytes": 31898,
+          "segundos": 0.0206
+        },
+        {
+          "url": "https://github.com",
+          "estado": 200,
+          "bytes": 580274,
+          "segundos": 0.3664
+        },
+        {
+          "url": "https://www.wikipedia.org",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0585
+        },
+        {
+          "url": "https://es.wikipedia.org/wiki/Asyncio",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0601
+        },
+        {
+          "url": "https://www.um.edu.ar",
+          "estado": 200,
+          "bytes": 154946,
+          "segundos": 1.6075
+        },
+        {
+          "url": "https://www.google.com",
+          "estado": 200,
+          "bytes": 86417,
+          "segundos": 0.1004
+        },
+        {
+          "url": "https://www.mozilla.org",
+          "estado": 200,
+          "bytes": 47808,
+          "segundos": 0.0231
+        },
+        {
+          "url": "https://www.debian.org",
+          "estado": 200,
+          "bytes": 15864,
+          "segundos": 0.2263
+        },
+        {
+          "url": "https://www.kernel.org",
+          "estado": 200,
+          "bytes": 19152,
+          "segundos": 0.0183
+        },
+        {
+          "url": "https://www.docker.com",
+          "estado": 200,
+          "bytes": 505462,
+          "segundos": 0.0327
+        },
+        {
+          "url": "https://pypi.org",
+          "estado": 200,
+          "bytes": 27884,
+          "segundos": 0.0241
+        },
+        {
+          "url": "https://www.rust-lang.org",
+          "estado": 200,
+          "bytes": 18594,
+          "segundos": 0.0365
+        },
+        {
+          "url": "https://www.apache.org",
+          "estado": 200,
+          "bytes": 52852,
+          "segundos": 0.027
+        },
+        {
+          "url": "https://www.cloudflare.com",
+          "estado": 200,
+          "bytes": 1333880,
+          "segundos": 0.4551
+        },
+        {
+          "url": "https://www.mercadolibre.com.ar",
+          "estado": 403,
+          "bytes": 2585,
+          "segundos": 0.0365
+        },
+        {
+          "url": "https://www.clarin.com",
+          "estado": 200,
+          "bytes": 4093752,
+          "segundos": 0.3824
+        },
+        {
+          "url": "https://www.lanacion.com.ar",
+          "estado": 200,
+          "bytes": 1092027,
+          "segundos": 0.2079
+        }
+      ]
+    },
+    {
+      "corrida": 3,
+      "modo": "concurrente",
+      "total_segundos": 1.7289,
+      "descargas": [
+        {
+          "url": "https://www.python.org",
+          "estado": 200,
+          "bytes": 53169,
+          "segundos": 0.0366
+        },
+        {
+          "url": "https://docs.python.org/3/",
+          "estado": 200,
+          "bytes": 19625,
+          "segundos": 0.0299
+        },
+        {
+          "url": "https://fastapi.tiangolo.com",
+          "estado": 200,
+          "bytes": 154024,
+          "segundos": 0.085
+        },
+        {
+          "url": "https://www.python-httpx.org",
+          "estado": 200,
+          "bytes": 31898,
+          "segundos": 0.0301
+        },
+        {
+          "url": "https://github.com",
+          "estado": 200,
+          "bytes": 580274,
+          "segundos": 0.4005
+        },
+        {
+          "url": "https://www.wikipedia.org",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0637
+        },
+        {
+          "url": "https://es.wikipedia.org/wiki/Asyncio",
+          "estado": 403,
+          "bytes": 126,
+          "segundos": 0.0717
+        },
+        {
+          "url": "https://www.um.edu.ar",
+          "estado": 200,
+          "bytes": 154946,
+          "segundos": 1.7238
+        },
+        {
+          "url": "https://www.google.com",
+          "estado": 200,
+          "bytes": 86419,
+          "segundos": 0.1056
+        },
+        {
+          "url": "https://www.mozilla.org",
+          "estado": 200,
+          "bytes": 47808,
+          "segundos": 0.0299
+        },
+        {
+          "url": "https://www.debian.org",
+          "estado": 200,
+          "bytes": 15864,
+          "segundos": 0.2725
+        },
+        {
+          "url": "https://www.kernel.org",
+          "estado": 200,
+          "bytes": 19152,
+          "segundos": 0.0317
+        },
+        {
+          "url": "https://www.docker.com",
+          "estado": 200,
+          "bytes": 505462,
+          "segundos": 0.0367
+        },
+        {
+          "url": "https://pypi.org",
+          "estado": 200,
+          "bytes": 27884,
+          "segundos": 0.0278
+        },
+        {
+          "url": "https://www.rust-lang.org",
+          "estado": 200,
+          "bytes": 18594,
+          "segundos": 0.0476
+        },
+        {
+          "url": "https://www.apache.org",
+          "estado": 200,
+          "bytes": 52852,
+          "segundos": 0.0254
+        },
+        {
+          "url": "https://www.cloudflare.com",
+          "estado": 200,
+          "bytes": 1333880,
+          "segundos": 0.3694
+        },
+        {
+          "url": "https://www.mercadolibre.com.ar",
+          "estado": 403,
+          "bytes": 2585,
+          "segundos": 0.042
+        },
+        {
+          "url": "https://www.clarin.com",
+          "estado": 200,
+          "bytes": 4093752,
+          "segundos": 0.3651
+        },
+        {
+          "url": "https://www.lanacion.com.ar",
+          "estado": 200,
+          "bytes": 1092027,
+          "segundos": 0.081
+        }
+      ]
+    }
+  ],
+  "mediana_secuencial": 4.495,
+  "mediana_concurrente": 1.6878,
+  "speedup": 2.6632302405498285,
+  "entorno": {
+    "host": "Darwin arm64",
+    "workers": 1000,
+    "executor": {
+      "usar": true,
+      "procesos": 12
+    }
+  }
+}

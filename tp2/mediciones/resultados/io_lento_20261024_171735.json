@@ -1,0 +1,49 @@
+{
+  "origen": "servidor lento local (demoras 0,2-1,5 s; suma 17.88 s, máxima 1.32 s)",
+  "urls": [
+    "http://lento:8001/demora/0.35?bytes=50000",
+    "http://lento:8001/demora/0.85?bytes=50000",
+    "http://lento:8001/demora/0.87?bytes=50000",
+    "http://lento:8001/demora/1.32?bytes=50000",
+    "http://lento:8001/demora/0.33?bytes=50000",
+    "http://lento:8001/demora/0.49?bytes=50000",
+    "http://lento:8001/demora/0.98?bytes=50000",
+    "http://lento:8001/demora/0.92?bytes=50000",
+    "http://lento:8001/demora/1.22?bytes=50000",
+    "http://lento:8001/demora/0.91?bytes=50000",
+    "http://lento:8001/demora/1.15?bytes=50000",
+    "http://lento:8001/demora/1.2?bytes=50000",
+    "http://lento:8001/demora/1.18?bytes=50000",
+    "http://lento:8001/demora/0.96?bytes=50000",
+    "http://lento:8001/demora/0.51?bytes=50000",
+    "http://lento:8001/demora/1.0?bytes=50000",
+    "http://lento:8001/demora/0.34?bytes=50000",
+    "http://lento:8001/demora/1.26?bytes=50000",
+    "http://lento:8001/demora/0.78?bytes=50000",
+    "http://lento:8001/demora/1.26?bytes=50000"
+  ],
+  "corridas": {
+    "secuencial": [
+      18.0795,
+      18.0825,
+      18.0731
+    ],
+    "concurrente": [
+      1.3397,
+      1.3471,
+      1.3454
+    ]
+  },
+  "errores": 0,
+  "mediana_secuencial": 18.0795,
+  "mediana_concurrente": 1.3454,
+  "speedup": 13.438011000445965,
+  "entorno": {
+    "host": "Darwin arm64",
+    "workers": 4,
+    "executor": {
+      "usar": true,
+      "procesos": 12
+    }
+  }
+}

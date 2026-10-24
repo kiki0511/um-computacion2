@@ -1,0 +1,49 @@
+{
+  "origen": "20 sitios reales",
+  "urls": [
+    "https://www.python.org",
+    "https://docs.python.org/3/",
+    "https://fastapi.tiangolo.com",
+    "https://www.python-httpx.org",
+    "https://github.com",
+    "https://www.wikipedia.org",
+    "https://es.wikipedia.org/wiki/Asyncio",
+    "https://www.um.edu.ar",
+    "https://www.google.com",
+    "https://www.mozilla.org",
+    "https://www.debian.org",
+    "https://www.kernel.org",
+    "https://www.docker.com",
+    "https://pypi.org",
+    "https://www.gnu.org",
+    "https://www.apache.org",
+    "https://www.cloudflare.com",
+    "https://www.mercadolibre.com.ar",
+    "https://www.clarin.com",
+    "https://www.lanacion.com.ar"
+  ],
+  "corridas": {
+    "secuencial": [
+      9.4815,
+      6.1872,
+      4.4336
+    ],
+    "concurrente": [
+      5.0184,
+      0.7978,
+      3.7748
+    ]
+  },
+  "errores": 2,
+  "mediana_secuencial": 6.1872,
+  "mediana_concurrente": 3.7748,
+  "speedup": 1.639080216170393,
+  "entorno": {
+    "host": "Darwin arm64",
+    "workers": 4,
+    "executor": {
+      "usar": true,
+      "procesos": 12
+    }
+  }
+}

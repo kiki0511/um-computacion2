@@ -1,0 +1,73 @@
+{
+  "tipo": "hashear",
+  "parametros": {
+    "texto": "techo",
+    "iteraciones": 1000000
+  },
+  "filas": [
+    {
+      "tareas": 1,
+      "total": 0.194812,
+      "cola_prom": 0.000224,
+      "ejecucion_prom": 0.194588,
+      "por_segundo": 5.13315401515307,
+      "fallidas": 0
+    },
+    {
+      "tareas": 2,
+      "total": 0.180955,
+      "cola_prom": 0.0003065,
+      "ejecucion_prom": 0.1793695,
+      "por_segundo": 11.052471608963554,
+      "fallidas": 0
+    },
+    {
+      "tareas": 4,
+      "total": 0.200493,
+      "cola_prom": 0.000348,
+      "ejecucion_prom": 0.19619975,
+      "por_segundo": 19.950821225678702,
+      "fallidas": 0
+    },
+    {
+      "tareas": 8,
+      "total": 0.396244,
+      "cola_prom": 0.096610875,
+      "ejecucion_prom": 0.19592375,
+      "por_segundo": 20.189580157680624,
+      "fallidas": 0
+    },
+    {
+      "tareas": 16,
+      "total": 0.78908,
+      "cola_prom": 0.29256875,
+      "ejecucion_prom": 0.1963606875,
+      "por_segundo": 20.276778019972625,
+      "fallidas": 0
+    },
+    {
+      "tareas": 32,
+      "total": 1.572368,
+      "cola_prom": 0.68145028125,
+      "ejecucion_prom": 0.19511415625,
+      "por_segundo": 20.351469884912436,
+      "fallidas": 0
+    },
+    {
+      "tareas": 64,
+      "total": 3.145999,
+      "cola_prom": 1.461149515625,
+      "ejecucion_prom": 0.195928796875,
+      "por_segundo": 20.34329953696743,
+      "fallidas": 0
+    }
+  ],
+  "entorno": {
+    "host": "Darwin arm64",
+    "workers": 4,
+    "executor": {
+      "usar": true,
+      "procesos": 12
+    }
+  }
+}

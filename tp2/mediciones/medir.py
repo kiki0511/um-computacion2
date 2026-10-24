@@ -57,7 +57,7 @@ URLS_REALES = [
     "https://www.kernel.org",
     "https://www.docker.com",
     "https://pypi.org",
-    "https://www.gnu.org",
+    "https://www.rust-lang.org",
     "https://www.apache.org",
     "https://www.cloudflare.com",
     "https://www.mercadolibre.com.ar",
@@ -164,6 +164,7 @@ def medir_io(args) -> None:
     esperar_inactiva()
 
     corridas = {"secuencial": [], "concurrente": []}
+    detalle_corridas = []  # resultado completo de cada corrida (por URL), para el JSON
     errores = 0
     for i in range(1, args.repeticiones + 1):
         for modo in ("secuencial", "concurrente"):
@@ -172,9 +173,16 @@ def medir_io(args) -> None:
             if tarea["estado"] != "completada":
                 sys.exit(f"La tarea terminó {tarea['estado']}: {tarea['error']}")
             res = tarea["resultado"]
-            errores += sum(1 for d in res["descargas"] if "error" in d)
+            fallidas = [d for d in res["descargas"] if "error" in d]
+            errores += len(fallidas)
             corridas[modo].append(res["total_segundos"])
-            print(f"  corrida {i} {modo:<11} {res['total_segundos']:7.3f} s")
+            detalle_corridas.append({"corrida": i, "modo": modo, **res})
+            # La más lenta: en modo concurrente es la que marca el tiempo total
+            lenta = max(res["descargas"], key=lambda d: d["segundos"])
+            print(f"  corrida {i} {modo:<11} {res['total_segundos']:7.3f} s"
+                  f"  | más lenta: {lenta['url']} ({lenta['segundos']:.2f} s)")
+            for d in fallidas:
+                print(f"      error en {d['url']}: {d['error']}")
 
     sec = statistics.median(corridas["secuencial"])
     conc = statistics.median(corridas["concurrente"])
@@ -190,6 +198,7 @@ def medir_io(args) -> None:
     ruta = guardar(
         "io_reales" if args.reales else "io_lento",
         {"origen": origen, "urls": urls, "corridas": corridas, "errores": errores,
+         "detalle": detalle_corridas,
          "mediana_secuencial": sec, "mediana_concurrente": conc, "speedup": sec / conc},
     )
     print(f"\nDatos crudos: {ruta}")

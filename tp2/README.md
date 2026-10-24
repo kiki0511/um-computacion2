@@ -336,10 +336,12 @@ garantiza además que siempre se llame a `task_done()`.
 ## 4. Mediciones
 
 Todas se corren con `mediciones/medir.py`, que solo usa la biblioteca estándar
-(no hay que instalar nada) y guarda los datos crudos en `mediciones/resultados/`.
+(no hay que instalar nada) y guarda los datos crudos de cada corrida en
+`mediciones/resultados/`.
 
-**Entorno:** ‹COMPLETAR: modelo de Mac, chip, núcleos asignados a Docker
-Desktop, versión de macOS›
+**Entorno:** MacBook con Apple M4 Pro (12 núcleos: 8 de rendimiento y 4 de
+eficiencia), macOS 26.6.2, Docker Desktop con los 12 núcleos asignados. La
+API corre en el contenedor; el script de medición, en el host.
 
 ### 4.1 Concurrencia I/O: 20 descargas secuenciales contra 20 concurrentes
 
@@ -350,109 +352,193 @@ python3 mediciones/medir.py io --reales   # 20 sitios reales
 ```
 
 La misma tarea `descargar` se corre en dos modos: secuencial (un `for` con
-`await` adentro) y concurrente (`asyncio.gather`), tres veces cada uno, y se
-reporta la mediana. Se usan dos fuentes:
+`await` adentro) y concurrente (`asyncio.gather`), tres veces cada uno. Se
+reporta la mediana. Se usaron dos fuentes:
 
-- **Servidor lento local**: 20 URLs con demoras fijas entre 0,2 y 1,5 s
-  (suma **17,88 s**, máxima **1,32 s**). Es reproducible y aísla el efecto de
-  la concurrencia.
+- **Servidor lento local** (servicio `lento` del compose): 20 URLs con demoras
+  fijas entre 0,2 y 1,5 s, que suman **17,88 s** y la máxima es **1,32 s**. Es
+  reproducible y aísla el efecto de la concurrencia.
 - **20 sitios reales**: la situación real, con latencias que no controlo.
 
 | Fuente | Secuencial | Concurrente | Speedup |
 |--------|-----------:|------------:|--------:|
-| Servidor lento | ‹ › s | ‹ › s | ‹ ›x |
-| Sitios reales | ‹ › s | ‹ › s | ‹ ›x |
+| Servidor lento | 18,07 s (18,07 · 18,07 · 18,05) | 1,35 s (1,35 · 1,35 · 1,35) | **13,4x** |
+| Sitios reales | 4,50 s (7,90 · 4,50 · 3,80) | 1,69 s (1,69 · 1,66 · 1,73) | **2,7x** |
 
-**Interpretación.** ‹COMPLETAR con tus números›. En modo secuencial cada
-`await` espera la respuesta antes de pedir la siguiente URL, así que el tiempo
-es la **suma** de las demoras (≈ 17,88 s). En modo concurrente las 20 requests
-salen juntas: mientras una espera la red, el loop atiende a las demás, y el
-total es aproximadamente lo que tarda **la más lenta** (≈ 1,32 s). El speedup
-teórico es 17,88 / 1,32 ≈ 13,5x.
+**Interpretación.**
+
+Con el servidor lento, el secuencial tardó 18,07 s: la suma de las demoras
+(17,88 s) más unos 10 ms por request. Cada `await` espera la respuesta antes de
+pedir la siguiente URL. El concurrente tardó 1,35 s, prácticamente la demora
+máxima (1,32 s), y en las tres corridas la descarga más lenta fue justamente
+esa URL. Las 20 requests salen juntas: mientras una espera la red, el loop
+atiende a las demás, así que el total lo marca **la más lenta**, no la suma. El
+speedup medido (13,4x) coincide con el teórico (17,88 / 1,32 = 13,5x).
 
 Esa es la diferencia entre `gather` y un `for` con `await`: con el `for`, la
 corrutina se suspende en cada descarga y no lanza la siguiente hasta volver;
-con `gather` todas están suspendidas **a la vez**.
+con `gather` las 20 están suspendidas **a la vez**.
 
-Con sitios reales el speedup ‹es menor / mayor›, porque ‹el total concurrente
-lo marca el sitio más lento, y los tiempos varían de una corrida a otra›.
+Con sitios reales el speedup baja a 2,7x, y la razón es la misma regla: en las
+seis corridas el sitio más lento fue `www.um.edu.ar` (~1,65 s), y el
+concurrente tarda casi exactamente eso. Los otros 19 sitios responden rápido,
+así que la suma del secuencial es chica (4,5 s) y un solo sitio pesa más de un
+tercio del total. Cuanto más parejos son los tiempos, más gana la concurrencia.
+
+La primera corrida secuencial (7,90 s) fue más lenta que las otras dos porque
+arranca en frío: resolución DNS y apertura de conexiones TLS. Después el
+`AsyncClient` compartido reutiliza las conexiones (keep-alive).
+
+**Un caso que encontré de casualidad.** En la primera versión de la lista
+estaba `www.gnu.org`, que no respondió nunca: las seis corridas cortaron con
+`ConnectTimeout` a los 15 s (`TIMEOUT_HTTP`). El resultado fue secuencial
+22,36 s y concurrente **15,02 s**, un speedup de 1,5x. El concurrente tardó
+exactamente el timeout: la tarea no termina hasta que termina su descarga más
+lenta, aunque sea una que va a fallar. El error quedó reportado en el resultado
+de esa URL sin cortar la tarea. Lo reemplacé por `www.rust-lang.org` para la
+medición limpia; los datos de esa corrida quedaron en
+`resultados/io_reales_20261024_172831.json`.
 
 ### 4.2 El event loop bloqueado
 
 ```bash
 USAR_EXECUTOR=false docker compose up --build   # hash dentro del loop (mal)
-python3 mediciones/medir.py loop
+python3 mediciones/medir.py loop --iteraciones 30000000
 # Ctrl+C, y después:
 docker compose up --build                       # hash en el executor (bien)
-python3 mediciones/medir.py loop
+python3 mediciones/medir.py loop --iteraciones 30000000
 ```
 
-Se manda un `hashear` de 8 millones de iteraciones y, mientras corre, el script
-hace un `GET /tareas` cada 50 ms, cada uno esperando al anterior. Se mide
-cuánto tarda en responder cada uno.
+Se manda un `hashear` de 30 millones de iteraciones y, mientras corre, el
+script hace un `GET /tareas` cada 50 ms, cada uno esperando al anterior. Se
+mide cuánto tarda en responder cada uno.
 
 | Modo | Duración del hash | `GET /tareas` en reposo | GET atendidos durante el hash | Latencia prom. | Latencia máx. |
 |------|------------------:|------------------------:|------------------------------:|---------------:|--------------:|
-| Sin `run_in_executor` | ‹ › s | ‹ › ms | ‹ › | ‹ › ms | ‹ › ms |
-| Con `run_in_executor` | ‹ › s | ‹ › ms | ‹ › | ‹ › ms | ‹ › ms |
+| Sin `run_in_executor` | 5,42 s | 1,0 ms | **1** | 5415,9 ms | **5415,9 ms** |
+| Con `run_in_executor` | 5,32 s | 3,4 ms | **93** | 4,7 ms | **6,3 ms** |
 
-**Interpretación.** ‹COMPLETAR›. Sin executor, el primer `GET` tarda
-prácticamente **toda la duración del hash**: durante ese lapso se atiende un
-solo request. La conexión llega igual y el kernel la acepta, pero queda
-esperando en el socket, porque el loop está ocupado en el `for` del hash y no
-vuelve a preguntarle a `epoll` qué sockets tienen datos (clase 17). Desde
-afuera, el servidor está colgado: tampoco se dispararía un timeout ni se
-atendería un `DELETE`.
+**Interpretación.**
 
-Con executor, la latencia se mantiene en milisegundos, igual que en reposo, y
-se atienden decenas de requests mientras el hash corre en otro proceso. El
-hash no se hizo más rápido (tarda ‹lo mismo / un poco más, por pasar los datos
-entre procesos›): lo que cambió es que dejó de frenar a todos los demás.
+Sin executor, en 5,42 segundos de hash la API atendió **un solo request**, y
+ese request tardó 5415,9 ms: toda la duración del hash. El `POST` había
+respondido en 1,2 ms (antes de que el worker arrancara el cálculo); el
+siguiente `GET` llegó cuando el loop ya estaba adentro del `for` del hash. La
+conexión llega igual y el kernel la acepta, pero queda esperando en el socket,
+porque el loop no vuelve a preguntarle a `epoll` qué sockets tienen datos
+hasta que el hash termina (clase 17). Desde afuera, el servidor estuvo colgado
+cinco segundos y medio: tampoco se habría disparado un timeout ni atendido un
+`DELETE`.
+
+Con executor, durante 5,32 segundos de hash se atendieron **93 requests** y el
+peor tardó 6,3 ms, del mismo orden que con la API en reposo. Es casi mil veces
+menos latencia (5415,9 ms contra 6,3 ms).
+
+El hash no se hizo más rápido: tardó lo mismo en los dos casos (5,42 s contra
+5,32 s). Una sola tarea va bloque por bloque, así que usa un proceso por vez y
+no gana paralelismo. Lo que cambió es **quién espera**: sin executor, todo el
+servidor espera al hash; con executor, solo espera el worker que lo pidió.
 
 ### 4.3 Techo del pool
 
 ```bash
-docker compose up --build
-python3 mediciones/medir.py techo --tipo esperar     # 4 workers
+docker compose up --build                      # 4 workers
+python3 mediciones/medir.py techo --tipo esperar
 python3 mediciones/medir.py techo --tipo hashear
 # Ctrl+C, y después:
 N_WORKERS=1000 docker compose up --build
 python3 mediciones/medir.py techo --tipo esperar --niveles 1,64,256,1000
+python3 mediciones/medir.py techo --tipo hashear --niveles 1,4,8,12,16,24,48 --iteraciones 5000000
 ```
 
 Se mandan k tareas de golpe y se mide el tiempo total (de la primera creada a
 la última terminada), cuánto esperaron en la cola y cuánto tardaron
-ejecutándose.
+ejecutándose. Hay que mirar las dos últimas columnas: dicen **dónde** se
+espera.
 
 **`esperar` 1 s, con 4 workers:**
 
-‹pegar la tabla que imprime el script›
+| Tareas | Tiempo total | Ideal ⌈k/4⌉ s | Espera en cola (prom.) | Ejecución (prom.) | Tareas/s |
+|-------:|-------------:|--------------:|-----------------------:|------------------:|---------:|
+| 1 | 1,01 s | 1 s | 0,00 s | 1,01 s | 1,0 |
+| 2 | 1,00 s | 1 s | 0,00 s | 1,00 s | 2,0 |
+| 4 | 1,01 s | 1 s | 0,00 s | 1,00 s | 4,0 |
+| 8 | 2,02 s | 2 s | 0,50 s | 1,01 s | 4,0 |
+| 16 | 4,02 s | 4 s | 1,50 s | 1,00 s | 4,0 |
+| 32 | 8,03 s | 8 s | 3,50 s | 1,00 s | 4,0 |
+| 64 | 16,07 s | 16 s | 7,51 s | 1,00 s | 4,0 |
 
 **`esperar` 1 s, con 1000 workers:**
 
-‹pegar la tabla que imprime el script›
+| Tareas | Tiempo total | Ideal | Espera en cola (prom.) | Ejecución (prom.) | Tareas/s |
+|-------:|-------------:|------:|-----------------------:|------------------:|---------:|
+| 1 | 1,01 s | 1 s | 0,00 s | 1,00 s | 1,0 |
+| 64 | 1,03 s | 1 s | 0,00 s | 1,00 s | 62,1 |
+| 256 | 1,11 s | 1 s | 0,00 s | 1,00 s | 231,2 |
+| 1000 | 1,33 s | 1 s | 0,00 s | 1,00 s | 753,8 |
 
-**`hashear` 10⁶ iteraciones, con 4 workers y ‹N› procesos:**
+**`hashear` 10⁶ iteraciones, con 4 workers (y 12 procesos en el executor):**
 
-‹pegar la tabla que imprime el script›
+| Tareas | Tiempo total | Espera en cola (prom.) | Ejecución (prom.) | Tareas/s |
+|-------:|-------------:|-----------------------:|------------------:|---------:|
+| 1 | 0,19 s | 0,00 s | 0,19 s | 5,1 |
+| 2 | 0,18 s | 0,00 s | 0,18 s | 11,1 |
+| 4 | 0,20 s | 0,00 s | 0,20 s | 20,0 |
+| 8 | 0,40 s | 0,10 s | 0,20 s | 20,2 |
+| 16 | 0,79 s | 0,29 s | 0,20 s | 20,3 |
+| 32 | 1,57 s | 0,68 s | 0,20 s | 20,4 |
+| 64 | 3,15 s | 1,46 s | 0,20 s | 20,3 |
 
-**Interpretación.** ‹COMPLETAR›. Hay tres techos distintos:
+**`hashear` 5·10⁶ iteraciones, con 1000 workers (y 12 procesos):**
+
+| Tareas | Tiempo total | Espera en cola (prom.) | Ejecución (prom.) | Tareas/s |
+|-------:|-------------:|-----------------------:|------------------:|---------:|
+| 1 | 0,91 s | 0,00 s | 0,91 s | 1,1 |
+| 4 | 1,01 s | 0,00 s | 1,00 s | 4,0 |
+| 8 | 1,03 s | 0,00 s | 1,02 s | 7,8 |
+| 12 | 1,34 s | 0,00 s | 1,29 s | 8,9 |
+| 16 | 1,79 s | 0,00 s | 1,71 s | 8,9 |
+| 24 | 2,61 s | 0,00 s | 2,55 s | 9,2 |
+| 48 | 5,22 s | 0,01 s | 5,10 s | 9,2 |
+
+**Interpretación.** No hay un solo techo: según el tipo de tarea y la
+configuración, el límite está en un lugar distinto, y las columnas de cola y
+ejecución dicen cuál es.
 
 1. **`esperar` con 4 workers: el techo es `N_WORKERS`.** Hasta 4 tareas todo
-   tarda 1 s. Desde ahí el tiempo total sigue a ⌈k/4⌉ s y la ejecución de cada
-   tarea sigue siendo 1 s: lo que crece es la **espera en la cola**. El límite
-   no es asyncio (un `sleep` no gasta CPU), es la cantidad de workers que
-   configuré.
-2. **`esperar` con 1000 workers: el techo pasa a ser el propio loop.** La
-   ejecución sigue en 1 s y la cola en ~0, pero el total crece un poco con k
-   porque un solo hilo tiene que recibir cada `POST`, parsear el HTTP, validar
-   con Pydantic y responder. ‹con mis números: unas N tareas aceptadas por
-   segundo›.
-3. **`hashear`: el techo son los núcleos.** Las tareas/s se estancan en ≈
-   procesos / duración de una tarea. A partir de que hay más tareas que
-   procesos, la "ejecución" promedio sube aunque haya workers libres: la
-   tarea figura `ejecutando` pero sus bloques esperan turno dentro del
-   executor. Más workers no ayudan: el cuello es la CPU física.
+   tarda 1 s. Desde ahí el total sigue exacto a ⌈k/4⌉ s (16,07 s para 64
+   tareas, contra 16 s ideal), las tareas/s quedan clavadas en 4,0 y la
+   ejecución de cada tarea sigue siendo 1,00 s. Lo único que crece es la
+   **espera en la cola** (hasta 7,51 s). El límite no es asyncio ni la CPU (un
+   `sleep` no gasta nada): es la cantidad de workers que configuré.
+
+2. **`esperar` con 1000 workers: el techo pasa a ser el loop mismo.** Con
+   workers de sobra, la cola queda en 0 y la ejecución en 1,00 s incluso con
+   1000 tareas: 1000 corrutinas durmiendo a la vez no le cuestan nada al loop.
+   Lo que sí crece es el total (1,33 s para 1000), porque un solo hilo tiene
+   que recibir cada `POST`, parsear el HTTP, validar con Pydantic y responder:
+   en mi máquina, unas 750 tareas por segundo. Parte de ese límite es también
+   el cliente de medición, que manda los `POST` desde 32 threads.
+
+3. **`hashear` con 4 workers: otra vez el techo son los workers, no la CPU.**
+   Con 12 procesos disponibles, las tareas/s se estancan en ~20, que es
+   exactamente 4 workers / 0,2 s por tarea. Ocho de los doce procesos quedan
+   ociosos: el pool de corrutinas es el que limita cuántos hashes se piden a la
+   vez. La espera crece en la cola, y la ejecución se mantiene en 0,20 s.
+
+4. **`hashear` con 1000 workers: el techo son los núcleos.** Ahora la cola
+   queda en 0 (siempre hay un worker libre), pero desde 12 tareas la
+   **ejecución** empieza a crecer: 1,29 s, 2,55 s, 5,10 s. La tarea figura
+   `ejecutando`, pero sus bloques están esperando turno dentro del executor.
+   Las tareas/s se estancan en ~9. Con 12 procesos y 0,91 s por tarea, el
+   ideal serían ~13; queda en 9 porque el M4 Pro tiene 8 núcleos de
+   rendimiento y 4 de eficiencia, mucho más lentos, y además Docker corre en
+   una máquina virtual. Agregar workers ya no sirve: el cuello es la CPU
+   física.
+
+La conclusión de las cuatro tablas: para I/O, el límite es configuración (los
+workers) y después el propio loop; para CPU, el límite son los núcleos, y la
+cantidad de workers útil es aproximadamente la de procesos del executor.
 
 ---
 

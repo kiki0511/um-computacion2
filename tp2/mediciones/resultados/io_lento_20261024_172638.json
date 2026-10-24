@@ -1,0 +1,813 @@
+{
+  "origen": "servidor lento local (demoras 0,2-1,5 s; suma 17.88 s, máxima 1.32 s)",
+  "urls": [
+    "http://lento:8001/demora/0.35?bytes=50000",
+    "http://lento:8001/demora/0.85?bytes=50000",
+    "http://lento:8001/demora/0.87?bytes=50000",
+    "http://lento:8001/demora/1.32?bytes=50000",
+    "http://lento:8001/demora/0.33?bytes=50000",
+    "http://lento:8001/demora/0.49?bytes=50000",
+    "http://lento:8001/demora/0.98?bytes=50000",
+    "http://lento:8001/demora/0.92?bytes=50000",
+    "http://lento:8001/demora/1.22?bytes=50000",
+    "http://lento:8001/demora/0.91?bytes=50000",
+    "http://lento:8001/demora/1.15?bytes=50000",
+    "http://lento:8001/demora/1.2?bytes=50000",
+    "http://lento:8001/demora/1.18?bytes=50000",
+    "http://lento:8001/demora/0.96?bytes=50000",
+    "http://lento:8001/demora/0.51?bytes=50000",
+    "http://lento:8001/demora/1.0?bytes=50000",
+    "http://lento:8001/demora/0.34?bytes=50000",
+    "http://lento:8001/demora/1.26?bytes=50000",
+    "http://lento:8001/demora/0.78?bytes=50000",
+    "http://lento:8001/demora/1.26?bytes=50000"
+  ],
+  "corridas": {
+    "secuencial": [
+      18.0738,
+      18.0713,
+      18.052
+    ],
+    "concurrente": [
+      1.3514,
+      1.351,
+      1.3476
+    ]
+  },
+  "errores": 0,
+  "detalle": [
+    {
+      "corrida": 1,
+      "modo": "secuencial",
+      "total_segundos": 18.0738,
+      "descargas": [
+        {
+          "url": "http://lento:8001/demora/0.35?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3655
+        },
+        {
+          "url": "http://lento:8001/demora/0.85?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8569
+        },
+        {
+          "url": "http://lento:8001/demora/0.87?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.877
+        },
+        {
+          "url": "http://lento:8001/demora/1.32?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.33
+        },
+        {
+          "url": "http://lento:8001/demora/0.33?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3429
+        },
+        {
+          "url": "http://lento:8001/demora/0.49?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5002
+        },
+        {
+          "url": "http://lento:8001/demora/0.98?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9908
+        },
+        {
+          "url": "http://lento:8001/demora/0.92?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9277
+        },
+        {
+          "url": "http://lento:8001/demora/1.22?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2279
+        },
+        {
+          "url": "http://lento:8001/demora/0.91?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.918
+        },
+        {
+          "url": "http://lento:8001/demora/1.15?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1567
+        },
+        {
+          "url": "http://lento:8001/demora/1.2?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2155
+        },
+        {
+          "url": "http://lento:8001/demora/1.18?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1849
+        },
+        {
+          "url": "http://lento:8001/demora/0.96?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9681
+        },
+        {
+          "url": "http://lento:8001/demora/0.51?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5156
+        },
+        {
+          "url": "http://lento:8001/demora/1.0?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0096
+        },
+        {
+          "url": "http://lento:8001/demora/0.34?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3524
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2708
+        },
+        {
+          "url": "http://lento:8001/demora/0.78?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.7928
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2701
+        }
+      ]
+    },
+    {
+      "corrida": 1,
+      "modo": "concurrente",
+      "total_segundos": 1.3514,
+      "descargas": [
+        {
+          "url": "http://lento:8001/demora/0.35?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3622
+        },
+        {
+          "url": "http://lento:8001/demora/0.85?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8752
+        },
+        {
+          "url": "http://lento:8001/demora/0.87?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8964
+        },
+        {
+          "url": "http://lento:8001/demora/1.32?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.3498
+        },
+        {
+          "url": "http://lento:8001/demora/0.33?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3562
+        },
+        {
+          "url": "http://lento:8001/demora/0.49?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5181
+        },
+        {
+          "url": "http://lento:8001/demora/0.98?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0065
+        },
+        {
+          "url": "http://lento:8001/demora/0.92?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9434
+        },
+        {
+          "url": "http://lento:8001/demora/1.22?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2478
+        },
+        {
+          "url": "http://lento:8001/demora/0.91?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9359
+        },
+        {
+          "url": "http://lento:8001/demora/1.15?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1802
+        },
+        {
+          "url": "http://lento:8001/demora/1.2?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2248
+        },
+        {
+          "url": "http://lento:8001/demora/1.18?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2086
+        },
+        {
+          "url": "http://lento:8001/demora/0.96?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9876
+        },
+        {
+          "url": "http://lento:8001/demora/0.51?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5377
+        },
+        {
+          "url": "http://lento:8001/demora/1.0?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0267
+        },
+        {
+          "url": "http://lento:8001/demora/0.34?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3636
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2876
+        },
+        {
+          "url": "http://lento:8001/demora/0.78?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8075
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2865
+        }
+      ]
+    },
+    {
+      "corrida": 2,
+      "modo": "secuencial",
+      "total_segundos": 18.0713,
+      "descargas": [
+        {
+          "url": "http://lento:8001/demora/0.35?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3534
+        },
+        {
+          "url": "http://lento:8001/demora/0.85?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8609
+        },
+        {
+          "url": "http://lento:8001/demora/0.87?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8793
+        },
+        {
+          "url": "http://lento:8001/demora/1.32?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.3283
+        },
+        {
+          "url": "http://lento:8001/demora/0.33?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3381
+        },
+        {
+          "url": "http://lento:8001/demora/0.49?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.4998
+        },
+        {
+          "url": "http://lento:8001/demora/0.98?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9918
+        },
+        {
+          "url": "http://lento:8001/demora/0.92?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9239
+        },
+        {
+          "url": "http://lento:8001/demora/1.22?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2281
+        },
+        {
+          "url": "http://lento:8001/demora/0.91?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9221
+        },
+        {
+          "url": "http://lento:8001/demora/1.15?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1631
+        },
+        {
+          "url": "http://lento:8001/demora/1.2?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2118
+        },
+        {
+          "url": "http://lento:8001/demora/1.18?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1863
+        },
+        {
+          "url": "http://lento:8001/demora/0.96?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9669
+        },
+        {
+          "url": "http://lento:8001/demora/0.51?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5201
+        },
+        {
+          "url": "http://lento:8001/demora/1.0?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0116
+        },
+        {
+          "url": "http://lento:8001/demora/0.34?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3518
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2694
+        },
+        {
+          "url": "http://lento:8001/demora/0.78?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.7914
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.273
+        }
+      ]
+    },
+    {
+      "corrida": 2,
+      "modo": "concurrente",
+      "total_segundos": 1.351,
+      "descargas": [
+        {
+          "url": "http://lento:8001/demora/0.35?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3626
+        },
+        {
+          "url": "http://lento:8001/demora/0.85?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8753
+        },
+        {
+          "url": "http://lento:8001/demora/0.87?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8916
+        },
+        {
+          "url": "http://lento:8001/demora/1.32?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.3487
+        },
+        {
+          "url": "http://lento:8001/demora/0.33?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3583
+        },
+        {
+          "url": "http://lento:8001/demora/0.49?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5188
+        },
+        {
+          "url": "http://lento:8001/demora/0.98?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0051
+        },
+        {
+          "url": "http://lento:8001/demora/0.92?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9427
+        },
+        {
+          "url": "http://lento:8001/demora/1.22?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2498
+        },
+        {
+          "url": "http://lento:8001/demora/0.91?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9388
+        },
+        {
+          "url": "http://lento:8001/demora/1.15?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1772
+        },
+        {
+          "url": "http://lento:8001/demora/1.2?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2291
+        },
+        {
+          "url": "http://lento:8001/demora/1.18?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2052
+        },
+        {
+          "url": "http://lento:8001/demora/0.96?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9888
+        },
+        {
+          "url": "http://lento:8001/demora/0.51?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5366
+        },
+        {
+          "url": "http://lento:8001/demora/1.0?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0232
+        },
+        {
+          "url": "http://lento:8001/demora/0.34?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3631
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2886
+        },
+        {
+          "url": "http://lento:8001/demora/0.78?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8081
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2876
+        }
+      ]
+    },
+    {
+      "corrida": 3,
+      "modo": "secuencial",
+      "total_segundos": 18.052,
+      "descargas": [
+        {
+          "url": "http://lento:8001/demora/0.35?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3602
+        },
+        {
+          "url": "http://lento:8001/demora/0.85?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8643
+        },
+        {
+          "url": "http://lento:8001/demora/0.87?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8783
+        },
+        {
+          "url": "http://lento:8001/demora/1.32?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.3282
+        },
+        {
+          "url": "http://lento:8001/demora/0.33?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3445
+        },
+        {
+          "url": "http://lento:8001/demora/0.49?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.4958
+        },
+        {
+          "url": "http://lento:8001/demora/0.98?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9866
+        },
+        {
+          "url": "http://lento:8001/demora/0.92?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9266
+        },
+        {
+          "url": "http://lento:8001/demora/1.22?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2266
+        },
+        {
+          "url": "http://lento:8001/demora/0.91?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9195
+        },
+        {
+          "url": "http://lento:8001/demora/1.15?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1579
+        },
+        {
+          "url": "http://lento:8001/demora/1.2?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2116
+        },
+        {
+          "url": "http://lento:8001/demora/1.18?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1874
+        },
+        {
+          "url": "http://lento:8001/demora/0.96?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9671
+        },
+        {
+          "url": "http://lento:8001/demora/0.51?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5166
+        },
+        {
+          "url": "http://lento:8001/demora/1.0?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0088
+        },
+        {
+          "url": "http://lento:8001/demora/0.34?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3512
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2635
+        },
+        {
+          "url": "http://lento:8001/demora/0.78?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.7858
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2712
+        }
+      ]
+    },
+    {
+      "corrida": 3,
+      "modo": "concurrente",
+      "total_segundos": 1.3476,
+      "descargas": [
+        {
+          "url": "http://lento:8001/demora/0.35?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3639
+        },
+        {
+          "url": "http://lento:8001/demora/0.85?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8759
+        },
+        {
+          "url": "http://lento:8001/demora/0.87?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8934
+        },
+        {
+          "url": "http://lento:8001/demora/1.32?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.3454
+        },
+        {
+          "url": "http://lento:8001/demora/0.33?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3608
+        },
+        {
+          "url": "http://lento:8001/demora/0.49?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5124
+        },
+        {
+          "url": "http://lento:8001/demora/0.98?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0067
+        },
+        {
+          "url": "http://lento:8001/demora/0.92?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9441
+        },
+        {
+          "url": "http://lento:8001/demora/1.22?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2467
+        },
+        {
+          "url": "http://lento:8001/demora/0.91?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9371
+        },
+        {
+          "url": "http://lento:8001/demora/1.15?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.1833
+        },
+        {
+          "url": "http://lento:8001/demora/1.2?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2254
+        },
+        {
+          "url": "http://lento:8001/demora/1.18?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2117
+        },
+        {
+          "url": "http://lento:8001/demora/0.96?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.9859
+        },
+        {
+          "url": "http://lento:8001/demora/0.51?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.5391
+        },
+        {
+          "url": "http://lento:8001/demora/1.0?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.0237
+        },
+        {
+          "url": "http://lento:8001/demora/0.34?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.3638
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2914
+        },
+        {
+          "url": "http://lento:8001/demora/0.78?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 0.8102
+        },
+        {
+          "url": "http://lento:8001/demora/1.26?bytes=50000",
+          "estado": 200,
+          "bytes": 50000,
+          "segundos": 1.2904
+        }
+      ]
+    }
+  ],
+  "mediana_secuencial": 18.0713,
+  "mediana_concurrente": 1.351,
+  "speedup": 13.376239822353813,
+  "entorno": {
+    "host": "Darwin arm64",
+    "workers": 4,
+    "executor": {
+      "usar": true,
+      "procesos": 12
+    }
+  }
+}
