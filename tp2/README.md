@@ -590,7 +590,9 @@ cantidad de workers útil es aproximadamente la de procesos del executor.
 
 ## 7. Lo que aprendí
 
-‹COMPLETAR en primera persona, 2-3 párrafos. Preguntas para arrancar: ¿qué te
-sorprendió de la medición 2? ¿qué te costó entender de la cancelación? ¿cómo
-cambió tu idea de "concurrente" entre el TP1 (procesos y señales) y este (un
-solo hilo)? ¿qué harías distinto?›
+Lo que más me costó entender es que en asyncio todo corre en un solo hilo y que eso funciona solo porque cada corrutina "suelta" el control en los `await`. Lo leí en las clases, pero recién lo entendí cuando medí el loop bloqueado: con el hash dentro del loop, durante 5,4 segundos la API atendió un solo request, y ese request tardó exactamente lo mismo que el hash. No es que la API estuviera lenta: estuvo literalmente congelada, y desde afuera no había forma de distinguirla de un servidor caído. Con el executor el hash tardó lo mismo, pero se atendieron 93 requests en ese tiempo. Ahí entendí que el executor no hace más rápido el cálculo, sino que cambia quién tiene que esperarlo.
+
+Algo que no esperaba fue que las mediciones mostraran cosas que no había pensado. Cuando medí con sitios reales, gnu.org no respondía nunca y la descarga concurrente tardó 15 segundos, justo el timeout: la tarea no termina hasta que termina su descarga más lenta, aunque sea una que va a fallar. También me sorprendió que con 4 workers y 12 procesos el sistema no usara ni la mitad de la CPU: el límite no lo ponía el procesador sino cuántos workers había configurado. Y cuando subí a 1000 workers, el techo pasó a ser los núcleos, pero no los 12 que esperaba, porque mi procesador tiene núcleos de rendimiento y de eficiencia que no rinden igual. Aprendí que el "techo" de un sistema no es un número fijo, sino que depende de qué tipo de trabajo le das.
+
+Comparando con el TP1, la forma de pensar la concurrencia es casi la opuesta. En el TP1 todo eran procesos separados, cada uno con su memoria, y para compartir datos necesitaba un Manager o pipes, y las señales podían llegar en cualquier momento. Acá todo comparte la misma memoria y no necesito ningún Lock, porque sé exactamente dónde se puede cortar mi código: solo en los `await`. Eso lo hace más fácil de razonar, pero también más frágil, porque un solo `time.sleep()` o un cálculo largo traba todo el servidor. Si lo tuviera que hacer de nuevo, le pondría un límite a la cola desde el principio, porque hoy aceptaría 10.000 tareas de golpe sin quejarse.
+
