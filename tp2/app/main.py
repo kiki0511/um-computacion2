@@ -134,6 +134,7 @@ async def estadisticas() -> dict:
         "por_estado": registro.totales_por_estado(),
         "tiempo_promedio_s": registro.tiempo_promedio(),
         "workers": {"total": pool.n_workers, "ocupados": pool.ocupados},
+        "executor": {"usar": config.USAR_EXECUTOR, "procesos": config.N_PROCESOS},
         "en_cola": pool.cola.qsize(),
         "aceptando": pool.aceptando,
     }

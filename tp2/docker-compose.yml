@@ -4,7 +4,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      N_WORKERS: "4"
+      # Todos se pueden pisar al levantar, p. ej.: N_WORKERS=50 docker compose up --build
+      N_WORKERS: "${N_WORKERS:-4}"
       TIMEOUT_DEFAULT: "60"
       TIMEOUT_APAGADO: "20"
       # Para la medición 2: USAR_EXECUTOR=false docker compose up --build
@@ -16,3 +17,11 @@ services:
     # Tiempo que Docker espera entre SIGTERM y SIGKILL. Tiene que ser mayor
     # que TIMEOUT_APAGADO, o Docker mata el proceso antes del volcado.
     stop_grace_period: 30s
+
+  # Servidor con latencia controlada para la medición 1 (ver mediciones/).
+  # La API lo alcanza como http://lento:8001 por la red interna del compose.
+  lento:
+    build: .
+    command: ["uvicorn", "mediciones.servidor_lento:app", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - "8001:8001"

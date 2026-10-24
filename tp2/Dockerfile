@@ -6,6 +6,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ app/
+# Solo para la medición 1: el servicio `lento` del compose corre desde acá
+COPY mediciones/servidor_lento.py mediciones/
 
 EXPOSE 8000
 
