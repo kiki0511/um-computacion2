@@ -156,7 +156,9 @@ class Pool:
         async with asyncio.timeout(tarea.timeout):
             return await tareas.ejecutar(tarea.tipo, tarea.parametros)
 
-    def _registrar_final(self, tarea: Tarea, subtarea: asyncio.Task, por_apagado: bool = False) -> None:
+    def _registrar_final(
+        self, tarea: Tarea, subtarea: asyncio.Task, por_apagado: bool = False
+    ) -> None:
         """
         El estado final sale de CÓMO terminó la subtarea. Si terminó bien justo
         antes del apagado, queda 'completada' aunque el worker se esté cancelando.

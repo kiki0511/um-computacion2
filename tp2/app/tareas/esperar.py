@@ -8,6 +8,7 @@ el hilo entero y con él toda la API.
 """
 
 import asyncio
+import math
 from typing import Any
 
 
@@ -16,8 +17,9 @@ def validar(parametros: dict[str, Any]) -> None:
     segundos = parametros.get("segundos")
     if not isinstance(segundos, (int, float)) or isinstance(segundos, bool):
         raise ValueError("'segundos' es obligatorio y debe ser un número")
-    if segundos < 0:
-        raise ValueError("'segundos' no puede ser negativo")
+    # isfinite descarta NaN e Infinity, que el json de Python acepta
+    if not math.isfinite(segundos) or segundos < 0:
+        raise ValueError("'segundos' debe ser un número finito y no negativo")
 
 
 async def ejecutar(parametros: dict[str, Any]) -> dict[str, Any]:

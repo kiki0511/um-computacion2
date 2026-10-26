@@ -70,7 +70,7 @@ ejercicios, cómo ejecutarlos y las respuestas a las preguntas conceptuales.
 | Clase 20 | Asyncio en red | ✅ Completo |
 | Clase 21 | Asyncio avanzado | ✅ Completo |
 | TP1 | Monitor de procesos y threads | ✅ Aprobado |
-| TP2 | Plataforma de tareas distribuidas | 🚧 En desarrollo (entrega 03/11) |
+| TP2 | Plataforma de tareas distribuidas | ✅ Completo (entrega 03/11) |
 
 ## Ejercicios obligatorios destacados
 

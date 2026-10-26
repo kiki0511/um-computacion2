@@ -100,8 +100,10 @@ Probar la cancelación en vivo: mandar un `esperar` de 60 s, consultar que esté
 docker compose stop      # manda SIGTERM al proceso (Ctrl+C manda SIGINT)
 ```
 
-La API deja de aceptar tareas (`503`), espera hasta `TIMEOUT_APAGADO` segundos a
-las que están ejecutando, cancela las que no terminaron y vuelca todo a
+La API deja de aceptar tareas: uvicorn cierra el socket de escucha, así que las
+conexiones nuevas se rechazan, y las que ya estaban abiertas (keep-alive)
+reciben `503`. Después espera hasta `TIMEOUT_APAGADO` segundos a las que están
+ejecutando, cancela las que no terminaron y vuelca todo a
 `estados/estado_<timestamp>.json` (carpeta montada en el host). Al volver a
 arrancar, reporta por log el último volcado encontrado.
 
@@ -324,9 +326,12 @@ garantiza además que siempre se llame a `task_done()`.
   crean al arrancar y se cierran al apagar, en orden.
 - **`202 Accepted`** en el `POST`: la tarea fue aceptada pero no está hecha.
 - **Señales**: uvicorn instala su handler de SIGINT/SIGTERM. Lo extiendo
-  (`Servidor.handle_exit`) solo para bajar el flag `aceptando`: un handler de
-  señal puede correr entre dos instrucciones cualquiera, así que no hace nada
-  más. El resto del apagado sucede en la parte final del `lifespan`.
+  (`Servidor.handle_exit`) solo para bajar el flag `aceptando` y dejar una
+  línea de log: un handler de señal puede correr entre dos instrucciones
+  cualquiera, así que no hace nada más. El log es seguro porque en Python el
+  handler corre en el hilo principal entre instrucciones de bytecode, y
+  `logging` usa un `RLock` (reentrante). El resto del apagado sucede en la
+  parte final del `lifespan`.
 - **Docker**: `CMD` en forma exec para que Python sea el PID 1 y reciba el
   SIGTERM directamente; `stop_grace_period: 30s` mayor que `TIMEOUT_APAGADO`
   para que Docker no mate el proceso con SIGKILL antes del volcado.
@@ -515,10 +520,13 @@ ejecución dicen cuál es.
 2. **`esperar` con 1000 workers: el techo pasa a ser el loop mismo.** Con
    workers de sobra, la cola queda en 0 y la ejecución en 1,00 s incluso con
    1000 tareas: 1000 corrutinas durmiendo a la vez no le cuestan nada al loop.
-   Lo que sí crece es el total (1,33 s para 1000), porque un solo hilo tiene
-   que recibir cada `POST`, parsear el HTTP, validar con Pydantic y responder:
-   en mi máquina, unas 750 tareas por segundo. Parte de ese límite es también
-   el cliente de medición, que manda los `POST` desde 32 threads.
+   Lo que sí crece es el total (1,33 s para 1000). Como cada tarea dura 1 s,
+   los 0,33 s de más son lo que tardaron en *entrar* las 1000 tareas: un solo
+   hilo tiene que recibir cada `POST`, parsear el HTTP, validar con Pydantic y
+   responder. Son unas 3000 por segundo en mi máquina (1000 / 0,33 s). La
+   columna Tareas/s (753,8) no mide eso, porque incluye el segundo que duerme
+   cada tarea. Parte del límite es también el cliente de medición, que manda
+   los `POST` desde 32 threads.
 
 3. **`hashear` con 4 workers: otra vez el techo son los workers, no la CPU.**
    Con 12 procesos disponibles, las tareas/s se estancan en ~20, que es
@@ -567,6 +575,9 @@ cantidad de workers útil es aproximadamente la de procesos del executor.
   el loop tiene que atender esos 10.000 `POST` uno por uno, y después la
   memoria. Con `asyncio.Queue(maxsize=...)` se podría responder `503` cuando
   se llena.
+- **El timeout cuenta desde que la tarea arranca, no desde que se creó.** Una
+  tarea puede pasar mucho tiempo `pendiente` sin vencer: con 10.000 tareas de
+  `esperar` 30 s y 4 workers, la última empezaría unas 21 horas después.
 - **`GET /tareas` sin paginación.** Serializa todas las tareas en el hilo del
   loop; con decenas de miles de tareas, ese mismo request frena al resto.
 - **El registro nunca borra tareas.** Crece mientras el servidor esté vivo.

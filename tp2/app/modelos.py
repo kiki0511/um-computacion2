@@ -43,8 +43,11 @@ class TareaIn(BaseModel):
 
     tipo: TipoTarea
     parametros: dict[str, Any] = Field(default_factory=dict)
+    # Que sea finito y mayor que 0 se valida en el endpoint (main.py), no
+    # acá: si Pydantic rechaza un Infinity o un NaN, FastAPI incluye ese valor
+    # en el cuerpo del 422, no lo puede pasar a JSON y termina respondiendo 500.
     timeout: float | None = Field(
-        default=None, gt=0, description="Segundos; si no se manda, usa el default"
+        default=None, description="Segundos (> 0); si no se manda, usa el default"
     )
 
 

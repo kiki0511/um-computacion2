@@ -19,6 +19,7 @@ Apagado ordenado (SIGINT / SIGTERM):
 """
 
 import logging
+import math
 import multiprocessing
 import signal
 from concurrent.futures import ProcessPoolExecutor
@@ -87,10 +88,16 @@ app = FastAPI(title="Plataforma de Tareas Distribuidas", lifespan=lifespan)
 async def crear_tarea(entrada: TareaIn) -> dict:
     if not pool.aceptando:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "el servidor se está apagando")
+    # El json de Python acepta Infinity y NaN aunque no son JSON estándar:
+    # hay que rechazarlos a mano (ver el comentario en modelos.TareaIn).
+    if entrada.timeout is not None and not (
+        math.isfinite(entrada.timeout) and entrada.timeout > 0
+    ):
+        raise HTTPException(422, "'timeout' debe ser un número finito mayor que 0")
     try:
         tareas.validar(entrada.tipo, entrada.parametros)
     except ValueError as e:
-        raise HTTPException(422, str(e))
+        raise HTTPException(422, str(e)) from e
 
     tarea = Tarea(
         tipo=entrada.tipo,
@@ -148,7 +155,10 @@ class Servidor(uvicorn.Server):
     apagado normal, que termina disparando la parte final del lifespan.
 
     Ojo: un handler de signal.signal puede correr entre dos instrucciones
-    cualquiera del programa, por eso acá solo se cambia un flag y nada más.
+    cualquiera del programa, por eso acá solo se cambia un flag y se deja una
+    línea de log. El log es seguro: en Python el handler corre en el hilo
+    principal entre dos instrucciones de bytecode (no dentro de la señal de
+    C), y logging usa un RLock, que es reentrante, así que no se traba.
     """
 
     def handle_exit(self, sig: int, frame) -> None:
