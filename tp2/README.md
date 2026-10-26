@@ -563,7 +563,7 @@ cantidad de workers útil es aproximadamente la de procesos del executor.
 | Executors | `hashear.py`: `run_in_executor` con `ProcessPoolExecutor`; `registro.py`: `asyncio.to_thread` para escribir el JSON | 21, 22 |
 | Futures y pickle | `run_in_executor` devuelve un future; la función del hash está a nivel de módulo porque viaja pickleada al otro proceso | 9, 22 |
 | GIL: threads contra procesos | por qué el hash va a procesos y no a threads | 10, 21 |
-| Señales | handler de SIGINT/SIGTERM que solo cambia un flag (reentrancia: un handler puede correr en cualquier momento) | 6, 20 |
+| Señales | handler de SIGINT/SIGTERM que solo cambia un flag y loguea (reentrancia: un handler puede correr en cualquier momento) | 6, 20 |
 | Docker | `Dockerfile` con `CMD` en forma exec (PID 1 recibe SIGTERM), compose con dos servicios en la misma red | 1, 2 |
 
 ---
